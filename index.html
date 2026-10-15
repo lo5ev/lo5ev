@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="pop">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Прежде чем поверить — интерактивный квиз</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800;900&family=Rubik:wght@500;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0720;--panel:rgba(18,10,46,.65);--cd:rgba(255,255,255,.06);--bd:rgba(255,255,255,.14);--bw:1px;--rd:18px;--rdl:36px;--tx:#f4f1ff;--mu:#a79fc7;--a1:#8b5cf6;--a2:#ff2e93;--a3:#c6ff3d;--a4:#22d3ee;--ok:#34f5a0;--no:#ff4d8d;--hl:#c6ff3d;--on:#fff;--fd:'Unbounded',sans-serif;--fb:'Manrope',sans-serif;--sh:none;--shh:0 14px 40px rgba(34,211,238,.25);--shp:0 0 0 1px rgba(139,92,246,.3),0 30px 90px rgba(0,0,0,.55),0 0 90px rgba(139,92,246,.25);--lift:translateY(-5px);--hb:var(--a4);--grad:linear-gradient(135deg,var(--a1),var(--a2));--tg:linear-gradient(90deg,var(--a3),var(--a4),var(--a2),var(--a3));--bgimg:linear-gradient(rgba(255,255,255,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.1) 1px,transparent 1px);--bgsz:48px 48px;--bm:20%;--bt:var(--tx);--blur:22px;--blobs:.45}
+[data-theme=pop]{--bg:#ffe45e;--panel:#fffaf0;--cd:#fff;--bd:#111;--bw:3px;--rd:16px;--rdl:30px;--tx:#111;--mu:#4a4a4a;--a1:#ff4fa3;--a2:#3d5afe;--a3:#00d68f;--a4:#ffc400;--ok:#00c27a;--no:#ff3b3b;--hl:#3d5afe;--on:#fff;--fb:'Rubik',sans-serif;--sh:5px 5px 0 #111;--shh:8px 8px 0 #111;--shp:10px 10px 0 #111;--lift:translate(-3px,-3px) rotate(-.6deg);--hb:#111;--grad:var(--a1);--tg:linear-gradient(var(--a2),var(--a2));--bgimg:radial-gradient(#11111140 2px,transparent 2px);--bgsz:24px 24px;--bm:100%;--bt:#111;--blur:0px;--blobs:0}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--tx);font-family:var(--fb);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:10px;overflow-x:hidden;transition:background .5s}
+.bg{position:fixed;inset:0;z-index:0;background-image:var(--bgimg);background-size:var(--bgsz)}
+.blobs{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;opacity:var(--blobs);transition:.5s}
+.blobs i{position:absolute;width:46vmax;height:46vmax;border-radius:50%;filter:blur(90px);animation:drift 18s ease-in-out infinite alternate}
+.blobs i:nth-child(1){background:var(--a1);top:-15%;left:-10%}.blobs i:nth-child(2){background:var(--a2);bottom:-20%;right:-10%;animation-delay:-6s}.blobs i:nth-child(3){background:var(--a4);width:30vmax;height:30vmax;top:40%;left:55%;animation-delay:-12s}
+@keyframes drift{to{transform:translate(8vw,6vh) scale(1.2)}}
+#fx,#rain{position:fixed;inset:0;pointer-events:none}#fx{z-index:60}#rain{z-index:0;opacity:.35;display:none}
+
+#app{position:relative;z-index:1;width:100vw;height:100vh;max-width:1100px;max-height:850px;background:var(--panel);backdrop-filter:blur(var(--blur));border:var(--bw) solid var(--bd);border-radius:var(--rdl);box-shadow:var(--shp);padding:18px;display:flex;transition:.4s}
+#app.hit{animation:hit .4s}@keyframes hit{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.themes{position:fixed;top:10px;right:10px;z-index:80;display:flex;gap:6px;padding:5px;border-radius:50px;background:rgba(0,0,0,.65);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2)}
+.themes button{border:0;background:transparent;color:#fff;font:700 .75rem 'Manrope',sans-serif;padding:7px 12px;border-radius:50px;cursor:pointer;transition:.2s}
+.themes button.on{background:#fff;color:#000}
+.steps{position:absolute;top:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:3}
+.steps i{width:28px;height:7px;border-radius:7px;background:var(--bd);border:calc(var(--bw)/1.5) solid var(--bd);transition:.4s}.steps i.on{background:var(--a3);box-shadow:0 0 12px var(--a3)}
+[data-theme=pop] .steps i.on{background:var(--a1);box-shadow:none}
+.container{width:100%;height:100%;padding:36px 30px 22px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--a1) transparent}
+.page{display:none;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:center}.page.active{display:flex}
+.page.active>*{animation:rise .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*55ms)}
+@keyframes rise{from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:none}}@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.kicker{font-family:var(--fd);font-size:.7rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--hl);margin-bottom:10px;text-align:center}
+@keyframes blink{50%{opacity:0}}
+.title{font-family:var(--fd);font-weight:900;font-size:clamp(1.4rem,3.7vw,2.7rem);letter-spacing:-1px;text-align:center;margin-bottom:.4em;line-height:1.2;text-wrap:balance}
+.title.big{font-size:clamp(2.2rem,7.2vw,5rem);line-height:1.02;letter-spacing:-2px}
+.title span{background:var(--tg);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:flow 6s linear infinite}
+@keyframes flow{to{background-position:250% 0}}
+[data-theme=pop] .title span{-webkit-text-fill-color:#fff;background:var(--a1);padding:0 .22em;border:var(--bw) solid #111;box-shadow:5px 5px 0 #111;display:inline-block;transform:rotate(-2deg);animation:none;margin-top:6px}
+
+@keyframes glitch{0%,90%,100%{text-shadow:0 0 18px var(--a1)}92%{text-shadow:-4px 0 var(--a3),4px 0 var(--a2);transform:translateX(2px)}96%{text-shadow:4px 0 var(--a3),-4px 0 var(--a2);transform:translateX(-2px)}}
+.subtitle{font-size:clamp(.95rem,1.3vw,1.12rem);color:var(--mu);text-align:center;line-height:1.6;max-width:640px;margin-bottom:.8em;font-weight:500}
+.text-block{font-size:clamp(.95rem,1.1vw,1.06rem);line-height:1.7;max-width:720px;margin:.4em 0;width:100%}.text-block strong{color:var(--hl);font-weight:800}
+.quote{font-size:1rem;font-weight:700;border-left:5px solid var(--a2);padding:10px 18px;margin:.8em 0;max-width:650px;width:100%;background:var(--cd);border-radius:0 14px 14px 0}
+.divider-thick{height:6px;width:110px;background:var(--grad);margin:.4em auto .9em;border-radius:6px}
+.hero-icon-small{font-size:3rem;line-height:1;margin:4px 0;display:inline-block;animation:fl 3s ease-in-out infinite}@keyframes fl{50%{transform:translateY(-8px) rotate(4deg)}}
+.stks{position:absolute;inset:0;pointer-events:none;overflow:hidden}.stks i{position:absolute;font-style:normal;font-size:clamp(2.2rem,5vw,4rem);animation:fl 4s ease-in-out infinite;filter:drop-shadow(0 6px 0 rgba(0,0,0,.25))}
+.stks i:nth-child(1){top:11%;left:5%}.stks i:nth-child(2){top:16%;right:6%;animation-delay:-1s}.stks i:nth-child(3){bottom:16%;left:7%;animation-delay:-2s}.stks i:nth-child(4){bottom:12%;right:5%;animation-delay:-3s}
+.ticker{width:calc(100% + 60px);overflow:hidden;margin:8px -30px 14px;padding:9px 0;border-block:var(--bw) solid var(--bd);background:var(--a4);color:#111;transform:rotate(-1.6deg)}
+
+.ticker div{display:flex;gap:30px;width:max-content;font-family:var(--fd);font-weight:800;font-size:.78rem;letter-spacing:2px;animation:tick 20s linear infinite}@keyframes tick{to{transform:translateX(-50%)}}
+.feature-card,.stat-card,.sign-item,.mode-card,.game-card,.game-header,.game-text,.sort-card,.answer-btn,.pair-item,.player-panel,.result-box,.detail-statement,.detail-block,.fake-post,.bar-row,.stat-box,.feedback,.broken-arg,.etalon-box,.sort-bin,.text-input,.fixarea{background:var(--cd);border:var(--bw) solid var(--bd);border-radius:var(--rd);box-shadow:var(--sh);transition:.2s cubic-bezier(.2,.8,.2,1)}
+.feature-card:hover,.mode-card:hover,.game-card:hover,.sign-item:hover,.stat-card:hover,.sort-bin:hover,.pair-item:hover,.answer-btn:hover:not(:disabled){transform:var(--lift);box-shadow:var(--shh);border-color:var(--hb)}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:720px;margin:14px 0}
+.feature-card{padding:18px 12px;text-align:center}.f-icon{font-size:2.3rem;display:block;margin-bottom:6px}.f-text{font-size:.86rem;font-weight:800;line-height:1.3}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:700px;margin:14px 0}
+.stat-card{--sc:var(--a4);padding:22px 12px;text-align:center}.stat-card.pink{--sc:var(--a2)}.stat-card.orange{--sc:var(--a3)}
+.s-num{font-family:var(--fd);font-size:clamp(1.4rem,3vw,2.1rem);font-weight:900;color:var(--sc);text-shadow:0 0 22px var(--sc);line-height:1}.s-label{font-size:.8rem;color:var(--mu);margin-top:8px;line-height:1.3;font-weight:600}
+[data-theme=pop] .stat-card{background:var(--sc)}[data-theme=pop] .s-num{color:#111;text-shadow:none}[data-theme=pop] .s-label{color:#111}
+.signs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;width:100%;max-width:700px;margin:12px 0}
+.sign-item{display:flex;align-items:center;gap:14px;padding:14px 16px}.sign-item .n{font-family:var(--fd);font-weight:900;font-size:1.1rem;color:var(--hl);opacity:.8}.s-emoji{font-size:1.8rem}.s-text{font-size:.95rem;font-weight:800}
+.bar-row{width:100%;max-width:620px;margin:6px 0;padding:12px 16px}.bar-label{font-size:.88rem;margin-bottom:8px;display:flex;justify-content:space-between;font-weight:600}.bar-label strong{color:var(--hl);font-family:var(--fd)}
+.bar-track{height:12px;background:rgba(128,128,128,.25);border:calc(var(--bw)/1.5) solid var(--bd);border-radius:12px;overflow:hidden}.bar-fill{height:100%;background:var(--grad);animation:grow 1.4s .4s cubic-bezier(.2,.8,.2,1) both}@keyframes grow{from{width:0}}
+.badge-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:12px 0;max-width:680px}
+.badge{--bc:var(--a1);padding:8px 16px;border-radius:12px;font-size:.85rem;font-weight:800;background:color-mix(in srgb,var(--bc) var(--bm),transparent);border:var(--bw) solid var(--bc);color:var(--bt);transform:rotate(-3deg)}
+.badge.pink{--bc:var(--a2);transform:rotate(2.5deg)}.badge.green{--bc:var(--a3);transform:rotate(-1.5deg)}.badge.orange{--bc:var(--a4);transform:rotate(3deg)}
+[data-theme=pop] .badge{border-color:#111;box-shadow:3px 3px 0 #111}
+.nav-buttons{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:18px}
+.btn{background:var(--cd);border:var(--bw) solid var(--bd);color:var(--tx);font-weight:800;font-family:var(--fb);font-size:clamp(.85rem,1vw,1rem);padding:12px 26px;border-radius:var(--rd);cursor:pointer;transition:.15s;box-shadow:var(--sh)}
+.btn:hover{transform:var(--lift);box-shadow:var(--shh);border-color:var(--hb)}.btn:active{transform:scale(.95);box-shadow:none}
+.btn.secondary{color:var(--mu)}
+.btn.primary{background:var(--grad);color:var(--on);border-color:var(--bd);box-shadow:0 8px 30px color-mix(in srgb,var(--a2) 50%,transparent)}
+[data-theme=pop] .btn.primary{box-shadow:5px 5px 0 #111}
+.btn.big{font-family:var(--fd);font-size:1.1rem;padding:18px 44px;animation:glow 2.4s ease-in-out infinite}@keyframes glow{50%{filter:brightness(1.2)}}
+.btn.full{width:100%;max-width:340px;padding:14px 26px;font-size:1rem}
+.footer-sign{margin-top:14px;font-size:.72rem;color:var(--mu);opacity:.7;letter-spacing:1px;text-align:center}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;width:100%;max-width:620px;margin:16px 0}.mode-card{padding:32px 20px;text-align:center;cursor:pointer}
+.m-icon{font-size:3.2rem;display:block;margin-bottom:8px}.m-title{font-family:var(--fd);font-weight:800;font-size:1.05rem}.m-desc{font-size:.9rem;color:var(--mu);margin-top:8px;line-height:1.5;font-weight:500}
+.game-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;max-width:740px;margin:16px 0}
+.game-card{padding:16px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:14px}
+.g-icon{font-size:2.1rem;width:60px;height:60px;display:grid;place-items:center;border-radius:var(--rd);background:color-mix(in srgb,var(--a1) 30%,transparent);border:var(--bw) solid var(--bd);flex-shrink:0}
+.game-card:nth-child(4n+2) .g-icon{background:color-mix(in srgb,var(--a2) 30%,transparent)}.game-card:nth-child(4n+3) .g-icon{background:color-mix(in srgb,var(--a3) 30%,transparent)}.game-card:nth-child(4n) .g-icon{background:color-mix(in srgb,var(--a4) 30%,transparent)}
+.g-content{flex:1}.g-title{font-weight:800;font-size:1rem}.g-desc{font-size:.82rem;color:var(--mu);margin-top:4px;line-height:1.4;font-weight:500}
+.game-header{display:flex;justify-content:space-between;width:100%;max-width:680px;padding:10px 16px;font-size:.92rem;font-weight:800;color:var(--mu);margin-bottom:14px;gap:12px;flex-wrap:wrap}
+.score{color:var(--hl);font-family:var(--fd)}.errors{color:var(--no);font-family:var(--fd)}.turn{color:var(--a4)}
+.game-question{font-size:clamp(1.05rem,1.6vw,1.3rem);font-weight:800;text-align:center;margin:10px 0 18px;max-width:640px;line-height:1.5}
+.game-text,.sort-card{border-left:6px solid var(--a4);padding:20px 24px;font-size:1.02rem;line-height:1.6;max-width:640px;margin:10px 0 20px;text-align:left}
+.game-text em{color:var(--hl)}.sort-card{font-weight:700;text-align:center;width:100%;min-height:80px;display:flex;align-items:center;justify-content:center;border-left-color:var(--a3)}
+.answer-grid{display:grid;gap:12px;width:100%;max-width:640px}.answer-grid.two,.answer-grid.four{grid-template-columns:1fr 1fr}
+.answer-btn{padding:16px 20px;font-family:var(--fb);font-size:1rem;font-weight:800;color:var(--tx);cursor:pointer;text-align:center;line-height:1.4}
+.answer-btn.correct,.sort-bin.correct,.pair-item.correct-pick{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 22%,var(--cd));box-shadow:0 0 28px color-mix(in srgb,var(--ok) 50%,transparent);animation:pop .5s}
+.answer-btn.wrong,.sort-bin.wrong,.pair-item.wrong-pick{border-color:var(--no);background:color-mix(in srgb,var(--no) 22%,var(--cd));box-shadow:0 0 28px color-mix(in srgb,var(--no) 50%,transparent);animation:shake .4s}
+[data-theme=pop] .answer-btn.correct,[data-theme=pop] .answer-btn.wrong{border-color:#111;box-shadow:var(--sh)}
+.answer-btn:disabled{cursor:default}@keyframes pop{50%{transform:scale(1.06)}}@keyframes shake{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.feedback{margin:16px 0;padding:18px 20px;font-size:.96rem;line-height:1.6;max-width:640px;width:100%;display:none;font-weight:500}.feedback.show{display:block;animation:fadeIn .3s}
+.feedback.good{border-color:var(--ok);border-left-width:6px;background:color-mix(in srgb,var(--ok) 16%,var(--cd))}.feedback.bad{border-color:var(--no);border-left-width:6px;background:color-mix(in srgb,var(--no) 16%,var(--cd))}
+.fb-actions{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}.fb-actions .btn{padding:8px 18px;font-size:.85rem}
+.input-wrap{width:100%;max-width:640px;margin:10px 0}.text-input,.fixarea{width:100%;padding:14px 18px;font-family:var(--fb);font-size:1rem;color:var(--tx);outline:none}.fixarea{min-height:90px;max-width:640px;resize:vertical;line-height:1.6}
+.text-input:focus,.fixarea:focus{border-color:var(--a4);box-shadow:0 0 22px color-mix(in srgb,var(--a4) 40%,transparent)}::placeholder{color:var(--mu);opacity:.7}
+.pair-list{width:100%;max-width:640px;margin:14px 0}.pair-item{padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer}.pair-item.selected{border-color:var(--a1);background:color-mix(in srgb,var(--a1) 25%,var(--cd))}
+.pair-item .num{width:30px;height:30px;background:var(--a1);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;flex-shrink:0}
+.player-panel{padding:20px;margin:10px 0;width:100%;max-width:640px;text-align:center}.p-title{font-family:var(--fd);font-weight:800;font-size:1rem;margin-bottom:8px}.p-desc{font-size:.92rem;color:var(--mu);line-height:1.5}
+.timer-display,.race-timer{font-family:var(--fd);font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:800;color:var(--a4);text-align:center;margin:6px 0 12px;font-variant-numeric:tabular-nums}
+[data-theme=pop] .timer-display,[data-theme=pop] .race-timer{color:var(--a2)}.timer-display.warning,.race-timer.warning{color:var(--no)!important;animation:pulse .5s infinite}@keyframes pulse{50%{opacity:.5;transform:scale(1.08)}}
+.result-box{padding:30px 24px;width:100%;max-width:560px;text-align:center}.result-box h2{font-family:var(--fd);font-weight:800;font-size:clamp(1.1rem,2.2vw,1.5rem)}.result-box .hero-icon-small{font-size:4.5rem}
+.big-score{font-family:var(--fd);font-weight:900;font-size:clamp(3.2rem,6vw,4.6rem);color:var(--hl);margin:8px 0;text-shadow:0 0 30px color-mix(in srgb,var(--hl) 60%,transparent)}[data-theme=pop] .big-score{text-shadow:4px 4px 0 var(--a4)}
+.rank{font-weight:800;font-size:clamp(1.1rem,1.8vw,1.4rem);margin:4px 0}.verdict{font-size:.95rem;margin:10px 0 14px;line-height:1.6;padding:14px;background:rgba(128,128,128,.14);border-radius:14px;font-weight:500}
+.result-box .stats{display:flex;justify-content:center;gap:20px;font-size:.85rem;color:var(--mu);margin:6px 0 16px;flex-wrap:wrap;font-weight:600}.result-box .stats span{color:var(--hl);font-weight:800}
+.progress-bar{width:100%;max-width:640px;height:10px;background:rgba(128,128,128,.25);border:calc(var(--bw)/1.5) solid var(--bd);border-radius:10px;margin:6px 0 12px;overflow:hidden}.progress-fill{height:100%;background:var(--grad);transition:width .4s}
+.detail-wrap{width:100%;max-width:720px;padding:10px 0;text-align:left}.detail-head{text-align:center;margin-bottom:20px}.detail-icon{font-size:4rem;line-height:1;margin-bottom:8px}
+.detail-type{display:inline-block;padding:6px 18px;border-radius:10px;font-weight:800;font-size:.85rem;letter-spacing:1px;text-transform:uppercase;transform:rotate(-2deg);border:var(--bw) solid var(--bd)}
+.detail-type.fake{background:var(--no);color:#fff}.detail-type.fact{background:var(--ok);color:#06241a}.detail-type.opinion{background:var(--a4);color:#111}.detail-type.manip,.detail-type.logic{background:var(--a1);color:#fff}
+
+.detail-statement{border-left:6px solid var(--a1);padding:20px 24px;font-size:1.05rem;line-height:1.6;margin-bottom:16px;font-weight:700}.detail-block{padding:20px 24px;margin-bottom:14px}
+.detail-block h3{font-family:var(--fd);font-size:.8rem;color:var(--hl);margin-bottom:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px}.detail-block p{font-size:.98rem;line-height:1.7;font-weight:500}.detail-block a{color:var(--hl);text-decoration:underline;word-break:break-word;font-weight:800}
+.sort-bins{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:640px}.sort-bin{padding:24px 12px;text-align:center;font-weight:800;font-size:.95rem;border-style:dashed;cursor:pointer}
+.fake-post{padding:18px 22px;max-width:560px;width:100%;margin:10px 0 18px;text-align:left}.fake-post-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:var(--bw) solid var(--bd)}
+.fake-post-avatar{width:42px;height:42px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;border:var(--bw) solid var(--bd)}.fake-post-name{font-weight:800;font-size:.92rem}.fake-post-sub{font-size:.75rem;color:var(--mu);margin-top:2px}.fake-post-body{font-size:1rem;line-height:1.9;font-weight:500}
+.flag{background:color-mix(in srgb,var(--a4) 35%,transparent);border-bottom:2px dashed var(--a4);border-radius:4px;padding:1px 4px;cursor:pointer;font-weight:800}.flag:hover{background:color-mix(in srgb,var(--a4) 65%,transparent)}.flag.revealed{background:color-mix(in srgb,var(--no) 45%,transparent);border-bottom-color:var(--no)}
+.feed-counter{text-align:center;font-weight:800;color:var(--hl);margin:4px 0 8px}
+.broken-arg{border-color:var(--no);border-left-width:6px;background:color-mix(in srgb,var(--no) 12%,var(--cd));padding:18px 22px;line-height:1.6;font-style:italic;max-width:640px;width:100%;margin-bottom:14px;font-weight:600}
+.etalon-box{display:none;border-color:var(--ok);border-left-width:6px;background:color-mix(in srgb,var(--ok) 14%,var(--cd));padding:18px 22px;margin-top:14px;max-width:640px;width:100%;line-height:1.7}.etalon-box.show{display:block;animation:fadeIn .3s}
+#toast{position:fixed;top:64px;left:50%;z-index:90;transform:translate(-50%,-20px) scale(.8);opacity:0;pointer-events:none;font-family:var(--fd);font-weight:900;font-size:1.2rem;padding:10px 22px;border-radius:50px;background:var(--a4);color:#111;border:var(--bw) solid #111;box-shadow:var(--sh);transition:.3s cubic-bezier(.3,1.6,.5,1)}#toast.on{opacity:1;transform:translate(-50%,0) scale(1)}
+@media(max-width:768px){body{padding:0}#app{max-height:none;height:auto;min-height:100vh;border-radius:0;padding:0}.container{padding:50px 14px 20px}.game-grid,.mode-grid,.answer-grid.four,.features-grid,.stats-row,.signs-grid,.sort-bins{grid-template-columns:1fr}.features-grid[style]{grid-template-columns:1fr 1fr!important}.ticker{width:calc(100% + 28px);margin-inline:-14px}.stks{display:none}.themes button{padding:6px 9px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+.page{justify-content:safe center}
+.game-card{position:relative}.game-card .done{position:absolute;top:-8px;right:-6px;width:24px;height:24px;border-radius:50%;background:color-mix(in srgb,var(--ok) 40%,#fff);border:2px solid #111;display:grid;place-items:center;font-weight:900;font-size:.75rem;color:#fff;opacity:.6;transform:rotate(8deg)}
+.chip{display:inline-block;margin-left:8px;padding:2px 12px;border-radius:50px;background:var(--a4);border:3px solid #111;color:#111;font-weight:800}
+.xp{margin:6px 0 14px;text-align:left}.xp-top{display:flex;justify-content:space-between;font-weight:800;margin-bottom:6px;font-size:.95rem}#stars{letter-spacing:2px}
+.memo{width:100%;max-width:640px;display:grid;gap:10px}.memo-step{display:flex;gap:14px;align-items:center;padding:12px 16px;background:var(--cd);border:var(--bw) solid var(--bd);border-radius:var(--rd);box-shadow:var(--sh);cursor:pointer;transition:.2s;font-size:.95rem;line-height:1.45;font-weight:500}
+.memo-step:nth-child(odd){transform:rotate(-.5deg)}.memo-step:nth-child(even){transform:rotate(.5deg)}
+.memo-step b{flex:0 0 40px;height:40px;border-radius:50%;display:grid;place-items:center;font-family:var(--fd);background:var(--a4);border:3px solid #111;transition:.25s}
+.memo-step:hover{transform:translate(-3px,-3px);box-shadow:var(--shh)}.memo-step.on{background:color-mix(in srgb,var(--ok) 25%,#fff)}.memo-step.on b{background:var(--ok);color:#fff}.memo-step.on b::before{content:'✓'}.memo-step.on b{font-size:0}.memo-step.on b::before{font-size:1.2rem}
+.ach{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:640px}.ach div{padding:12px 8px;text-align:center;background:var(--cd);border:var(--bw) solid var(--bd);border-radius:var(--rd);box-shadow:var(--sh);font-size:.78rem;font-weight:700;line-height:1.3}
+.ach div i{display:block;font-style:normal;font-size:2rem}.ach div b{display:block;font-size:.85rem}.ach .lock{filter:grayscale(1);opacity:.45;box-shadow:none}.ach .new{animation:pop .6s}
+.plus{position:fixed;z-index:95;pointer-events:none;font-family:var(--fd);font-weight:900;font-size:1.6rem;color:var(--a3);-webkit-text-stroke:2px #111;paint-order:stroke fill;animation:plus 1s ease-out forwards}@keyframes plus{to{transform:translateY(-70px) scale(1.3);opacity:0}}
+@media(max-width:768px){.ach{grid-template-columns:repeat(2,1fr)}}
+.ptools{position:fixed;top:10px;left:10px;z-index:80;display:flex;gap:6px;padding:5px;border-radius:50px;background:rgba(0,0,0,.65);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2)}
+.ptools button{min-width:36px;height:36px;border:0;border-radius:50px;background:rgba(255,255,255,.14);color:#fff;font:800 .8rem 'Manrope',sans-serif;cursor:pointer;transition:.2s}.ptools button:hover{background:var(--a2)}
+.modal{position:fixed;inset:0;z-index:100;display:none;place-items:center;padding:16px;background:rgba(5,3,20,.65);backdrop-filter:blur(8px)}.modal.on{display:grid;animation:fadeIn .25s}
+.modal-box{position:relative;width:100%;max-width:560px;max-height:90vh;overflow:auto;padding:26px;background:var(--panel);color:var(--tx);border:var(--bw) solid var(--bd);border-radius:var(--rdl);box-shadow:var(--shp)}.modal-box .mclose{position:absolute;top:12px;right:12px;padding:4px 12px}
+@media(max-width:768px){.ptools{top:6px;left:6px;gap:3px}.ptools button{min-width:30px;height:30px;font-size:.7rem}.themes{top:6px;right:6px}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+// === ВСТАВЬ СВОИ ДАННЫЕ из Supabase → Project Settings → API ===
+window.QUIZ_CONFIG={
+  SUPABASE_URL:'https://rpybaffazxqmprxdztql.supabase.co',
+  SUPABASE_ANON_KEY:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJweWJhZmZhenhxbXByeGR6dHFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MTMyMTIsImV4cCI6MjEwNzQ4OTIxMn0.xoNu5ok571hV7-h4Sv2opioj571uWkVfVIY7RwFXOb8'
+};
+</script>
+<style id="kidui">
+/* ===== Дружелюбное оформление: белая карточка на весь экран, мягче и крупнее ===== */
+html body{background:var(--bg);font-size:17px}
+html body #app{width:calc(100vw - 32px)!important;height:calc(100svh - 32px)!important;margin:16px!important;background:var(--panel)!important;border:3px solid #111!important;border-radius:32px!important;box-shadow:10px 10px 0 #111!important;overflow:hidden;position:relative}
+#app::before{content:'';position:absolute;inset:0 0 auto 0;height:10px;z-index:4;background:linear-gradient(90deg,var(--a1) 0 25%,var(--a2) 0 50%,var(--a3) 0 75%,var(--a4) 0 100%)}
+.bg{background-image:radial-gradient(#1112 2px,transparent 2px)}
+/* заголовки читаемее: буквы больше не слипаются */
+.title{letter-spacing:0;line-height:1.18}.title.big{letter-spacing:.5px;line-height:1.1;font-size:clamp(2.2rem,6.4vw,4.6rem)}
+.subtitle{font-size:clamp(1.05rem,1.5vw,1.3rem);line-height:1.65;color:#444}
+.text-block{font-size:clamp(1.05rem,1.3vw,1.25rem);line-height:1.8}.s-label{font-size:.92rem;color:#333}
+.game-text,.sort-card{font-size:1.2rem}.game-question{font-size:clamp(1.15rem,1.8vw,1.45rem)}
+/* крупные, мягкие кнопки без мигания */
+.btn{min-height:50px;border-radius:20px;font-size:1.02rem}.btn.big{animation:none;font-size:1.15rem;padding:16px 38px}
+.answer-btn{font-size:1.08rem;border-radius:20px;padding:18px 20px}
+.feature-card,.sign-item,.game-card,.stat-card,.mode-card{border-radius:22px}
+/* бегущая строка — аккуратная «наклейка» внутри карточки */
+.page .ticker{width:100%;max-width:860px;margin:10px auto 18px;border:3px solid #111;border-radius:18px;box-shadow:4px 4px 0 #111;rotate:-1deg;overflow:hidden;padding:8px 0}
+.stks i{font-size:clamp(2rem,4vw,3.2rem);opacity:.95}
+.steps i{width:34px;height:9px}
+#page1 .nav-buttons{margin-top:12px;gap:14px;align-items:center}
+@media(max-width:760px){html body #app{width:calc(100vw - 12px)!important;height:calc(100svh - 12px)!important;margin:6px!important;border-radius:24px!important;box-shadow:5px 5px 0 #111!important}
+ html body{font-size:16px}.title.big{font-size:2.3rem}#app::before{height:8px}}
+</style>
+<style id="slidecss">
+.slide-card{background:#fffaf0;border:3px solid #111;border-radius:24px;box-shadow:8px 8px 0 #111;padding:32px 40px;width:100%;max-width:1100px;position:relative;margin:auto}
+.slide-card .slide-scope{max-height:calc(100svh - 230px);overflow-y:auto;overflow-x:hidden;padding:4px}
+.slide-card::after{content:attr(data-emoji);position:absolute;top:-16px;right:-16px;font-size:2rem;transform:rotate(15deg);filter:drop-shadow(3px 3px 0 #111)}
+.slide-card.sec{background:#fffaf0}
+@media(max-width:760px){.slide-card{padding:20px;border-radius:16px;box-shadow:5px 5px 0 #111}.slide-card .slide-scope{max-height:calc(100svh - 250px)}}
+@keyframes slideIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:none}}
+.slide-scope>*{animation:slideIn .4s both}.slide-scope>:nth-child(2){animation-delay:.06s}.slide-scope>:nth-child(3){animation-delay:.12s}.slide-scope>:nth-child(4){animation-delay:.18s}.slide-scope>:nth-child(5){animation-delay:.24s}.slide-scope>:nth-child(n+6){animation-delay:.3s}
+@keyframes float{50%{transform:translateY(-10px) rotate(5deg)}}
+.pico.float{font-size:clamp(4rem,10vw,8rem);animation:float 3s infinite ease-in-out}
+.slide-card .subtitle{font-style:italic;color:#444;font-size:clamp(1rem,1.6vw,1.4rem)}
+.pmd{font-size:clamp(1.15rem,2.4vw,1.9rem);line-height:1.55;color:#111;text-align:left;max-width:900px}.pmd strong{color:#ff4fa3;font-weight:900}.pmd ul{list-style:none;padding-left:0}.pmd li::before{content:'▸';color:var(--a1);font-weight:900;margin-right:8px}
+.hl{background:linear-gradient(transparent 45%,#ffc400 45%,#ffc400 90%,transparent 90%);padding:0 4px;color:inherit}
+.pk{background:var(--a1);color:#fff;padding:2px 10px;border:2px solid #111;border-radius:8px;display:inline-block;transform:rotate(-1.5deg);box-shadow:3px 3px 0 #111;line-height:1.3}
+.bl{background:#8fd8ff;color:#111;padding:2px 10px;border:2px solid #111;border-radius:8px;display:inline-block;transform:rotate(1deg);box-shadow:2px 2px 0 #111;line-height:1.3}
+.gr{background:var(--a3);color:#111;padding:2px 10px;border:2px solid #111;border-radius:8px;display:inline-block;box-shadow:2px 2px 0 #111;line-height:1.3}
+.slide-card .f-icon{width:64px;height:64px;border-radius:50%;background:color-mix(in srgb,var(--ac,var(--a1)) 30%,#fff);border:3px solid #111;display:grid;place-items:center;font-size:2rem;margin:0 auto 8px;box-shadow:3px 3px 0 #111}
+.slide-card .feature-card:nth-child(4n+1){--ac:var(--a1)}.slide-card .feature-card:nth-child(4n+2){--ac:var(--a2)}.slide-card .feature-card:nth-child(4n+3){--ac:var(--a3)}.slide-card .feature-card:nth-child(4n+4){--ac:var(--a4)}
+.slide-card .f-text{font-size:1.05rem}.slide-card .s-label{font-size:.9rem;color:#333}
+.slide-card .s-emoji{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--a1),var(--a4));display:grid;place-items:center;font-size:1.6rem;border:3px solid #111;box-shadow:3px 3px 0 #111;flex-shrink:0}
+.slide-card .stat-card:nth-child(1){transform:rotate(-1deg)}.slide-card .stat-card:nth-child(2){transform:rotate(1deg)}.slide-card .stat-card:nth-child(3){transform:rotate(-1.5deg)}
+.slide-card .bar-label strong{background:var(--a1);color:#fff;padding:2px 12px;border:2px solid #111;border-radius:20px;box-shadow:2px 2px 0 #111;font-family:var(--fd)}
+.slide-card .bar-track{height:16px}.slide-card .bar-fill{background:repeating-linear-gradient(45deg,var(--a1) 0 10px,var(--a2) 10px 20px)}
+.quote-mark{font-family:var(--fd);font-size:clamp(4rem,10vw,8rem);color:var(--a1);line-height:.6;text-shadow:5px 5px 0 #111;-webkit-text-stroke:2px #111;margin-top:.2em}
+.slide-card .quote{border:0;background:none;text-align:center;font-family:var(--fd);font-weight:800;font-size:clamp(1.3rem,3vw,2.2rem);color:#111;max-width:900px;line-height:1.35}
+.sec-num{font-family:var(--fd);font-weight:900;font-size:clamp(4rem,10vw,8rem);line-height:1.1;letter-spacing:2px;padding:.05em .1em;background:linear-gradient(135deg,var(--a1),var(--a2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(3px 0 0 #111) drop-shadow(-3px 0 0 #111) drop-shadow(0 3px 0 #111) drop-shadow(0 -3px 0 #111)}
+.sec-title{font-family:var(--fd);font-weight:900;font-size:clamp(1.8rem,4vw,3rem);text-align:center;line-height:1.2}
+.slide-card .broken-arg,.slide-card .game-text{max-width:100%;width:100%;margin:6px 0}
+.popt-grid button.popt{cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;font-family:inherit;transition:.15s}.popt-grid button.popt:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 #111}.popt small{font-weight:500;color:#555;font-size:.8rem}
+.slide-scope.no-anim>*{animation:none!important}
+.slide-card .slide-scope{overscroll-behavior:contain}
+@media(max-width:760px){.pico.float{animation:none}}
+.tplq{border:3px solid #111;border-radius:18px;box-shadow:4px 4px 0 #111;padding:10px 22px;line-height:1.25;text-align:center;font-weight:800}.tplq b{display:block;font:900 1.5rem var(--fd)}
+.tmrow{margin:10px 0;padding:10px 14px;background:#fff;border:3px solid #111;border-radius:14px;text-align:left;font-weight:800}.tmn{font-weight:500;margin-top:4px;color:#333}
+.tplist{display:grid;gap:8px;margin:8px 0 14px}.tplist label.popt{cursor:pointer}
+#pBar{position:sticky;bottom:0;z-index:5;flex-shrink:0}#pBar .btn:hover{transform:none;box-shadow:var(--sh)}
+/* ===== Мобильная вёрстка, полоса прокрутки, производительность ===== */
+.slide-card,.slide-card *{box-sizing:border-box;max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+.slide-scope>*{flex-shrink:0} /* дети не сжимаются и не наезжают друг на друга (A5) */
+.answer-btn{position:static;height:auto;min-height:0;white-space:normal;overflow:visible;text-overflow:clip;text-align:left;line-height:1.35}
+#pStu .answer-btn{padding:14px 16px;font-size:1rem}
+.slide-card .s-ex{display:block;font-size:.8rem;color:#555;font-weight:500;margin-top:2px;line-height:1.3}
+.slide-card .slide-scope::-webkit-scrollbar{width:6px}.slide-card .slide-scope::-webkit-scrollbar-thumb{background:var(--a1);border-radius:6px}
+.slide-card .slide-scope{scrollbar-width:thin;scrollbar-color:var(--a1) transparent}
+html,body,#pStu,#pHost{overflow-x:hidden}
+.blobs i{filter:blur(50px)}
+@media(max-width:760px){
+ .slide-card .slide-scope{max-height:calc(100svh - 180px)}
+ #pStu{padding:8px}.slide-card .fixarea{min-height:80px;max-height:30vh}
+ .slide-card .nav-buttons,.slide-card .fb-actions{flex-wrap:wrap}.slide-card .btn{min-width:120px}
+ .slide-card .features-grid{grid-template-columns:1fr!important;gap:8px}
+ .slide-card .feature-card{padding:10px 12px}.slide-card .f-icon{width:48px;height:48px;font-size:1.4rem;margin-bottom:6px}
+ .slide-card .f-text{font-size:.9rem}.slide-card .s-label{font-size:.78rem;line-height:1.3}
+ .blobs{display:none}.blobs i{animation:none}html body #app,.modal{backdrop-filter:none!important}.pico.float{animation:none}
+}
+@media (max-width:480px){.blobs{display:none}.pico.float{animation:none}} /* лёгкие анимации (slideIn, кнопки) больше не отключаются */
+/* ===== ШАГ 1 (дельта к v5): мелкие размеры на мобилке, лёгкий режим, reduced-motion ===== */
+@media(max-width:760px){.slide-card .s-text{font-size:.9rem;line-height:1.35}.slide-card .s-ex{font-size:.78rem;color:#555;margin-top:2px}}
+@media (max-width:760px),(pointer:coarse){.blobs{display:none}.blobs i{animation:none}html body #app{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}.pico.float{animation:none}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.blobs{display:none}}
+/* ===== Лёгкие анимации: работают и на телефоне; при prefers-reduced-motion всё отключается (правило выше) ===== */
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.slide-card{animation:cardIn .25s ease-out backwards} /* смена слайда */
+@keyframes btnIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.answer-btn{animation:btnIn .35s backwards} /* backwards: после анимации не держит transform, :active работает */
+.answer-btn:nth-of-type(1){animation-delay:0ms}.answer-btn:nth-of-type(2){animation-delay:60ms}.answer-btn:nth-of-type(3){animation-delay:120ms}.answer-btn:nth-of-type(4){animation-delay:180ms}
+.answer-btn:active:not(:disabled){transform:scale(.96);transition:transform .08s}
+@keyframes popCorrect{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
+.answer-btn.correct{animation:popCorrect .5s ease-out} /* после общего .answer-btn → приоритет у .correct */
+@keyframes tick{50%{opacity:.7}}
+#sTim{display:inline-block;animation:tick 1s ease-in-out infinite}#sTim.paused{animation:none}
+@keyframes sticker{50%{transform:rotate(18deg) scale(1.05)}}
+.slide-card::after{animation:sticker 4s ease-in-out infinite}
+@keyframes plus{0%{opacity:0;transform:translateY(0) scale(.6)}20%{opacity:1;transform:translateY(-14px) scale(1.2)}100%{transform:translateY(-70px) scale(1.3);opacity:0}}
+@keyframes scoreBump{40%{transform:scale(1.35)}}
+#scoreDisplay.bump{display:inline-block;animation:scoreBump .3s ease-out}
+.no-anim .slide-card,.no-anim .slide-scope>*{animation:none!important} /* перерисовка того же слайда/фазы — без «моргания» */
+#fx{z-index:300} /* конфетти поверх оверлеев ученика и учителя */
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="blobs"><i></i><i></i><i></i></div><canvas id="rain"></canvas><canvas id="fx"></canvas><div id="toast"></div>
+
+<div id="app">
+<div class="steps" id="steps"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="container">
+
+        <div class="page active" id="page1">
+            <div class="stks"><i>🕵️</i><i>🎭</i><i>⚖️</i><i>🧠</i></div>
+            <div class="kicker">Урок критического мышления</div>
+            <div class="title big">НЕ ВЕДИСЬ<br>НА <span>ФЕЙКИ</span></div>
+            <div class="subtitle">7 мини-игр про фейки, манипуляции и логические ловушки. Сможешь переиграть интернет, пока он не переиграл тебя?</div>
+            <div class="ticker"><div><span>ФЕЙК ✦</span><span>ФАКТ ✦</span><span>МНЕНИЕ ✦</span><span>МАНИПУЛЯЦИЯ ✦</span><span>ЛОГИКА ✦</span><span>ФЕЙК ✦</span><span>ФАКТ ✦</span><span>МНЕНИЕ ✦</span><span>МАНИПУЛЯЦИЯ ✦</span><span>ЛОГИКА ✦</span><span>ФЕЙК ✦</span><span>ФАКТ ✦</span><span>МНЕНИЕ ✦</span><span>МАНИПУЛЯЦИЯ ✦</span><span>ЛОГИКА ✦</span><span>ФЕЙК ✦</span><span>ФАКТ ✦</span><span>МНЕНИЕ ✦</span><span>МАНИПУЛЯЦИЯ ✦</span><span>ЛОГИКА ✦</span></div></div>
+            <div class="badge-row"><span class="badge">🎮 7 игр</span><span class="badge pink">🏆 Живой рейтинг</span><span class="badge green">🧠 Соло</span><span class="badge orange">⏱️ 40 мин</span></div>
+            <div class="nav-buttons" style="flex-wrap:wrap"><button class="btn primary big" id="btnJoin">📱 Войти в игру</button><button class="btn" id="btnHost">🎓 Я учитель</button><button class="btn secondary" id="btnSolo">Тренироваться одному</button></div>
+            <div class="footer-sign">Проект команды МГПУ им. Евсевьева × МОУ «Средняя школа № 5»</div>
+        </div>
+
+        <div class="page" id="page2"><div class="kicker">Теория · 1 из 6</div><div class="hero-icon-small">🎯</div><div class="title"><span>Что такое</span> критическое мышление?</div><div class="divider-thick"></div><div class="text-block"><strong>Критическое мышление</strong> — это способность анализировать информацию, проверять её достоверность, отделять факты от мнений и принимать решения на основе доказательств, а не эмоций.</div><div class="text-block">Это не про то, чтобы «критиковать всех и вся», а про то, чтобы <strong>задавать правильные вопросы</strong> к любой информации:</div><div class="signs-grid"><div class="sign-item"><span class="s-emoji">❓</span><span class="s-text">Кто это сказал?</span></div><div class="sign-item"><span class="s-emoji">📍</span><span class="s-text">Откуда информация?</span></div><div class="sign-item"><span class="s-emoji">🎯</span><span class="s-text">Какая цель у источника?</span></div><div class="sign-item"><span class="s-emoji">🔬</span><span class="s-text">Есть ли доказательства?</span></div></div><div class="quote">«Критическое мышление — это не дар, а навык. И как любой навык, его можно натренировать.»</div><div class="nav-buttons"><button class="btn secondary" onclick="goToPage(1)">← Назад</button><button class="btn" onclick="goToPage(3)">Далее →</button></div></div>
+
+        <div class="page" id="page3"><div class="kicker">Теория · 2 из 6</div><div class="hero-icon-small">⚠️</div><div class="title"><span>Почему</span> это важно именно сейчас?</div><div class="divider-thick"></div><div class="text-block">Мы ежедневно сталкиваемся с <strong>лавиной противоречивой информации</strong>: соцсети, мессенджеры, новости, реклама — всё обрушивается одновременно.</div><div class="stats-row"><div class="stat-card"><div class="s-num" data-n="60" data-suf="%">60%</div><div class="s-label">делятся новостями, не проверив источник</div></div><div class="stat-card pink"><div class="s-num" data-n="6.5" data-d="1" data-suf=" сек">6,5 сек</div><div class="s-label">среднее время удержания внимания</div></div><div class="stat-card orange"><div class="s-num" data-n="7" data-suf=" из 10">7 из 10</div><div class="s-label">школьников не отличают фейк от факта</div></div></div><div class="bar-row"><div class="bar-label"><span>Попадались на фейки</span><strong>72%</strong></div><div class="bar-track"><div class="bar-fill" style="width:72%;"></div></div></div><div class="bar-row"><div class="bar-label"><span>Проверяют источник перед репостом</span><strong>28%</strong></div><div class="bar-track"><div class="bar-fill" style="width:28%;"></div></div></div><div class="features-grid" style="grid-template-columns:repeat(3,1fr);max-width:760px"><div class="feature-card"><span class="f-icon">📱</span><div class="f-text">Соцсети</div><div class="s-label">Лента показывает то, что цепляет, а не то, что правда.</div></div><div class="feature-card"><span class="f-icon">🎣</span><div class="f-text">Кликбейт</div><div class="s-label">Громкий заголовок ради клика: «ШОК! Ты не поверишь…»</div></div><div class="feature-card"><span class="f-icon">🏃</span><div class="f-text">Скорость фейков</div><div class="s-label">Эмоциональная ложь расходится быстрее скучной правды.</div></div></div><div class="quote">«Тот, кто управляет информацией, управляет решениями. Умей проверять — и ты свободен.»</div><div class="nav-buttons"><button class="btn secondary" onclick="goToPage(2)">← Назад</button><button class="btn" onclick="goToPage(4)">Далее →</button></div></div>
+
+        <div class="page" id="page4"><div class="kicker">Теория · 3 из 6</div><div class="hero-icon-small">🧬</div><div class="title"><span>Факт, мнение</span> или фейк?</div><div class="divider-thick"></div><div class="features-grid" style="grid-template-columns:repeat(3,1fr);max-width:760px"><div class="feature-card"><span class="f-icon">📊</span><div class="f-text">ФАКТ</div><div class="s-label">Можно проверить, не зависит от чувств. «Эверест — 8849 м над уровнем моря».</div></div><div class="feature-card"><span class="f-icon">💭</span><div class="f-text">МНЕНИЕ</div><div class="s-label">Оценка и вкус, у каждого своё. «Эта игра лучше той».</div></div><div class="feature-card"><span class="f-icon">🕵️</span><div class="f-text">ФЕЙК</div><div class="s-label">Ложь под видом правды. «С 1 января WhatsApp станет платным».</div></div></div><div class="badge-row"><span class="badge green">✅ Проверяется → факт</span><span class="badge orange">💭 Это оценка → мнение</span><span class="badge pink">🚫 Проверка не проходит → фейк</span></div><div class="quote">Правило: если нельзя проверить — это не факт.</div><div class="text-block">Мнение — не плохо! Проблема начинается, когда <strong>мнение выдают за факт</strong>: «Все знают, что эта группа — мусор».</div><div class="nav-buttons"><button class="btn secondary" onclick="goToPage(3)">← Назад</button><button class="btn" onclick="goToPage(11)">Далее →</button></div></div>
+
+        <div class="page" id="page11"><div class="kicker">Теория · 4 из 6</div><div class="hero-icon-small">🎭</div><div class="title">Как работает <span>манипуляция</span></div><div class="divider-thick"></div><div class="text-block">Манипулятор не доказывает — он <strong>давит на эмоции</strong>, чтобы ты не успел подумать. Вот 6 любимых приёмов:</div><div class="features-grid" style="grid-template-columns:repeat(3,1fr);max-width:760px"><div class="feature-card"><span class="f-icon">😱</span><div class="f-text">Эмоциональная накачка</div><div class="s-label">«ШОК! Это скрывают от тебя!»</div></div><div class="feature-card"><span class="f-icon">⚖️</span><div class="f-text">Ложная дилемма</div><div class="s-label">«Не подписался на канал — не настоящий фанат».</div></div><div class="feature-card"><span class="f-icon">👨‍🔬</span><div class="f-text">Апелляция к авторитету</div><div class="s-label">«Учёные доказали!» — без имён и ссылок.</div></div><div class="feature-card"><span class="f-icon">👥</span><div class="f-text">Социальное доказательство</div><div class="s-label">«Весь класс уже играет. А ты?»</div></div><div class="feature-card"><span class="f-icon">⏳</span><div class="f-text">Искусственный дефицит</div><div class="s-label">«Осталось 2 места! Акция только сегодня!»</div></div><div class="feature-card"><span class="f-icon">🔄</span><div class="f-text">Перевод стрелок</div><div class="s-label">«Не веришь блогеру? Просто завидуешь».</div></div></div><div class="quote">Если текст заставляет тебя злиться, бояться или спешить — остановись и проверь.</div><div class="nav-buttons"><button class="btn secondary" onclick="goToPage(4)">← Назад</button><button class="btn" onclick="goToPage(12)">Далее →</button></div></div>
+
+        <div class="page" id="page12"><div class="kicker">Теория · 5 из 6</div><div class="hero-icon-small">🧩</div><div class="title"><span>Логические</span> ошибки</div><div class="divider-thick"></div><div class="text-block">Бывает, что факты верные, а вывод — нет. Вот 6 ловушек рассуждения:</div><div class="features-grid" style="grid-template-columns:repeat(3,1fr);max-width:760px"><div class="feature-card"><span class="f-icon">🔗</span><div class="f-text">Совпадение — не причина</div><div class="s-label">«Петух кричит утром — и встаёт солнце. Значит, петух вызывает рассвет?»</div></div><div class="feature-card"><span class="f-icon">🏃</span><div class="f-text">Поспешное обобщение</div><div class="s-label">«Двое геймеров плохо учатся → все геймеры двоечники».</div></div><div class="feature-card"><span class="f-icon">🔄</span><div class="f-text">Обратное следование</div><div class="s-label">«Все программисты умные. Я умный → я программист».</div></div><div class="feature-card"><span class="f-icon">🎯</span><div class="f-text">Переход на личности</div><div class="s-label">«Сам двоечник, твоё мнение о школе не считается».</div></div><div class="feature-card"><span class="f-icon">🪜</span><div class="f-text">Придуманная цепочка</div><div class="s-label">«Разрешат краситься → начнут ходить голыми».</div></div><div class="feature-card"><span class="f-icon">🆕</span><div class="f-text">Апелляция к новизне</div><div class="s-label">«Новое приложение лучше, потому что новое».</div></div></div><div class="nav-buttons"><button class="btn secondary" onclick="goToPage(11)">← Назад</button><button class="btn" onclick="goToPage(13)">Далее →</button></div></div>
+
+        <div class="page" id="page13"><div class="kicker">Теория · 6 из 6</div><div class="hero-icon-small">🛡️</div><div class="title">Памятка: <span>прежде чем поверить</span></div><div class="divider-thick"></div><div class="signs-grid" style="grid-template-columns:1fr"><div class="sign-item"><span class="n">1</span><span class="s-text"><strong>СТОП.</strong> Не реагируй сразу. Эмоции — сигнал тревоги.</span></div><div class="sign-item"><span class="n">2</span><span class="s-text"><strong>ИСТОЧНИК.</strong> Кто автор и можно ли ему доверять?</span></div><div class="sign-item"><span class="n">3</span><span class="s-text"><strong>ДОКАЗАТЕЛЬСТВА.</strong> Где факты, цифры, ссылки?</span></div><div class="sign-item"><span class="n">4</span><span class="s-text"><strong>ПЕРЕПРОВЕРЬ.</strong> Пишут ли об этом другие надёжные источники?</span></div><div class="sign-item"><span class="n">5</span><span class="s-text"><strong>ВЫВОД.</strong> Факт, мнение или манипуляция? Только потом — репост.</span></div></div><div class="text-block" style="text-align:center;margin-top:12px"><strong>В играх ты прокачаешь:</strong></div><div class="features-grid" style="grid-template-columns:repeat(3,1fr);max-width:760px"><div class="feature-card"><span class="f-icon">🔍</span><div class="f-text">Распознавание манипуляций</div></div><div class="feature-card"><span class="f-icon">📚</span><div class="f-text">Структурирование данных</div></div><div class="feature-card"><span class="f-icon">⚖️</span><div class="f-text">Решения на основе фактов</div></div><div class="feature-card"><span class="f-icon">🎯</span><div class="f-text">Концентрация внимания</div></div><div class="feature-card"><span class="f-icon">🗣️</span><div class="f-text">Аргументация в диалоге</div></div><div class="feature-card"><span class="f-icon">🧩</span><div class="f-text">Логическое мышление</div></div></div><div class="nav-buttons"><button class="btn secondary" onclick="goToPage(12)">← Назад</button><button class="btn primary" onclick="selectMode('solo')">🎮 К ИГРАМ</button></div></div>
+
+        <div class="page" id="page5">
+            <div class="hero-icon-small">🎮</div>
+            <div class="title"><span>Выбери</span> режим игры</div>
+            <div class="subtitle">Тренируйся один или работай в паре с другом.</div>
+            <div class="mode-grid">
+                <div class="mode-card" onclick="selectMode('solo')">
+                    <span class="m-icon">🧠</span>
+                    <div class="m-title">Индивидуально</div>
+                    <div class="m-desc">8 игр для самостоятельной тренировки</div>
+                </div>
+                <div class="mode-card" onclick="selectMode('pair')">
+                    <span class="m-icon">👥</span>
+                    <div class="m-title">В паре</div>
+                    <div class="m-desc">3 игры для двоих на одном устройстве</div>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn secondary" onclick="goToPage(13)">← Назад</button>
+            </div>
+        </div>
+
+        <div class="page" id="page6">
+            <div class="title"><span>Список</span> игр</div>
+            <div class="subtitle" id="modeLabel"></div>
+            <div class="game-grid" id="gameGrid"></div>
+            <div class="nav-buttons">
+                <button class="btn secondary" onclick="goToPage(13)">← Назад</button>
+            </div>
+        </div>
+
+        <div class="page" id="page7">
+            <div class="game-header">
+                <span>Очки: <span class="score" id="scoreDisplay">0</span></span>
+                <span id="headerExtra"></span>
+                <span>Ошибки: <span class="errors" id="errorsDisplay">0</span></span>
+            </div>
+            <div class="progress-bar" id="progressBar" style="display:none;">
+                <div class="progress-fill" id="progressFill" style="width:0%"></div>
+            </div>
+            <div id="gameContent" style="width:100%; display:flex; flex-direction:column; align-items:center;"></div>
+            <button class="btn secondary" id="quitGameBtn" style="margin-top:20px; font-size:0.85rem; padding:8px 20px;">✕ Выйти из игры</button>
+        </div>
+
+        <div class="page" id="page8">
+            <div class="result-box">
+                <div class="hero-icon-small" id="resultIcon">🏆</div>
+                <h2>Твой результат</h2>
+                <div class="big-score" id="finalScore">0</div>
+                <div class="rank" id="finalRank">—</div>
+                <div class="verdict" id="finalVerdict">—</div>
+                <div class="stats">
+                    <div>Верных ответов: <span id="finalCorrect">0</span></div>
+                    <div>Ошибок: <span id="finalErrors">0</span></div>
+                </div>
+                <button class="btn primary full" id="retryBtn" style="margin-bottom:10px;">🔄 Пройти снова</button>
+                <button class="btn full" id="backToGamesBtn">🎮 К списку игр</button>
+                <button class="btn secondary full" id="homeBtn" style="margin-top:10px;">🏠 На главную</button>
+            </div>
+        </div>
+
+        <div class="page" id="page9">
+            <div class="detail-wrap" id="detailContent"></div>
+            <div class="nav-buttons">
+                <button class="btn primary" id="backToGameBtn">← Вернуться к игре</button>
+            </div>
+        </div>
+
+        <div class="page" id="page10">
+            <div class="hero-icon-small">🛡️</div>
+            <div class="title"><span>Памятка</span> на всю жизнь</div>
+            <div class="subtitle">Отмечай пункты. Соберёшь все 5 — получишь иммунитет к фейкам.</div>
+            <div class="memo" id="memo">
+                <div class="memo-step"><b>1</b><div><strong>СТОП.</strong> Не реагируй сразу. Сильные эмоции — повод насторожиться.</div></div>
+                <div class="memo-step"><b>2</b><div><strong>ИСТОЧНИК.</strong> Кто автор? Можно ли ему доверять?</div></div>
+                <div class="memo-step"><b>3</b><div><strong>ДОКАЗАТЕЛЬСТВА.</strong> Где факты, цифры, ссылки, даты?</div></div>
+                <div class="memo-step"><b>4</b><div><strong>ПЕРЕПРОВЕРЬ.</strong> Пишут ли об этом другие надёжные источники?</div></div>
+                <div class="memo-step"><b>5</b><div><strong>ВЫВОД.</strong> Это факт, мнение или манипуляция? Только потом — репост.</div></div>
+            </div>
+            <div class="game-question" style="margin:16px 0 8px">🏅 Твои достижения</div>
+            <div class="ach" id="achGrid"></div>
+            <div class="nav-buttons"><button class="btn secondary" onclick="goToPage(6)">🎮 К играм</button><button class="btn primary" onclick="goToPage(1)">🏠 На главную</button></div>
+        </div>
+
+        </div>
+</div>
+
+<script>
+const totalPages = 20;
+function goToPage(n) {
+    if (n < 1 || n > totalPages) return;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const pg = document.getElementById('page' + n);
+    if (pg) pg.classList.add('active');
+    const c = document.querySelector('.container');
+    if (c) c.scrollTop = 0;
+}
+
+let audioCtx = null;
+function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+function beep(freq, dur, type='sine', vol=0.15) {
+    if (window.muted) return;
+    try { initAudio();
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = type; o.frequency.value = freq;
+        g.gain.setValueAtTime(vol, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(); o.stop(audioCtx.currentTime + dur);
+    } catch(e) {}
+}
+function sCorrect() { beep(880, 0.1); }
+function sWrong() { beep(200, 0.2, 'sawtooth', 0.15); }
+function sClick() { beep(700, 0.03); }
+function sWin() { for (let i = 0; i < 5; i++) setTimeout(() => beep(600 + i*80, 0.08), i*70); }
+
+const state = {
+    mode: null, game: null, score: 0, errors: 0, correct: 0,
+    totalRounds: 0, currentRound: 0, data: {}, timer: null,
+    feedbackTimeout: null, currentItem: null, returnPage: 7,
+};
+
+const SOLO_GAMES = [
+    { id: 'fake',    icon: '🕵️', title: 'Фейк или факт',        desc: 'Правда или ложь? Проверь себя' },
+    { id: 'opinion', icon: '⚖️', title: 'Факт или мнение',       desc: 'Где объективный факт, а где чьё-то мнение' },
+    { id: 'sort',    icon: '🧲', title: 'Сортировка',            desc: 'Раскидай карточки по трём корзинам' },
+    { id: 'manip',   icon: '🎭', title: 'Манипуляция',           desc: 'Найди приём, которым тебя ведут' },
+    { id: 'slider',  icon: '📱', title: 'Фейк в ленте',          desc: 'Найди все подозрительные фразы в пересланном сообщении' },
+    { id: 'logic',   icon: '🧩', title: 'Логическая ошибка',    desc: 'Где сломалось рассуждение' },
+    { id: 'fixarg',  icon: '🛠️', title: 'Почини аргумент',      desc: 'Перепиши сломанную мысль (или скипни)' },
+];
+const PAIR_GAMES = [
+    { id: 'twotruths', icon: '🎭', title: '2 правды, 1 ложь',  desc: 'Игрок 1 загадывает — Игрок 2 угадывает' },
+    { id: 'brainstorm', icon: '💡', title: 'Мозговой штурм',    desc: 'Вдвоём придумайте аргументы за 60 секунд' },
+    { id: 'argupong',   icon: '🏓', title: 'Пинг-понг аргументов', desc: 'По очереди приводите аргументы' },
+];
+
+function selectMode(mode) {
+    sClick(); state.mode = mode; renderGameList(); goToPage(6);
+}
+
+function renderGameList() {
+    const list = state.mode === 'pair' ? PAIR_GAMES : SOLO_GAMES;
+    document.getElementById('modeLabel').innerHTML = state.mode === 'pair'
+        ? '👥 Парный режим — играйте вдвоём на одном устройстве'
+        : '🧠 Индивидуальный режим — тренируйся один';
+    const grid = document.getElementById('gameGrid');
+    grid.innerHTML = '';
+    list.forEach(g => {
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.innerHTML = `<span class="g-icon">${g.icon}</span><div class="g-content"><div class="g-title">${g.title}</div><div class="g-desc">${g.desc}</div></div>`;
+        card.addEventListener('click', () => { sClick(); launchGame(g.id); });
+        grid.appendChild(card);
+    });
+}
+
+function resetState() {
+    state.score = 0; state.errors = 0; state.correct = 0;
+    state.currentRound = 0; state.totalRounds = 0; state.data = {};
+    if (state.timer) { clearInterval(state.timer); state.timer = null; }
+    if (state.feedbackTimeout) { clearTimeout(state.feedbackTimeout); state.feedbackTimeout = null; }
+    document.getElementById('scoreDisplay').textContent = '0';
+    document.getElementById('errorsDisplay').textContent = '0';
+    document.getElementById('headerExtra').textContent = '';
+}
+
+function launchGame(id) {
+    resetState(); state.game = id; state.returnPage = 7; goToPage(7);
+    document.getElementById('gameContent').innerHTML = '';
+    document.getElementById('progressBar').style.display = 'none';
+
+    switch (id) {
+        case 'fake':       startFakeGame(); break;
+        case 'opinion':    startOpinionGame(); break;
+        case 'manip':      startManipGame(); break;
+        case 'logic':      startLogicGame(); break;
+        case 'sort':       startSortGame(); break;
+        case 'race':       startRaceGame(); break;
+        case 'slider':     startFeedGame(); break;
+        case 'fixarg':     startFixArgGame(); break;
+        case 'twotruths':  startTwoTruthsGame(); break;
+        case 'brainstorm': startBrainstormGame(); break;
+        case 'argupong':   startArguPongGame(); break;
+    }
+}
+
+/* ==================== ФЕЙК ИЛИ ФАКТ ==================== */
+
+const _sh=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+const MQ=(type,label,icon)=>(text,right,wrong,why,detail)=>{const o=_sh([right,...wrong]);return{text,options:o,correct:o.indexOf(right),type,typeLabel:label,typeIcon:icon,why,detail:detail||why}};
+const MP=MQ('manip','Манипуляция','🎭'),LG=MQ('logic','Логическая ошибка','🧩');
+const OP=(text,isOp,why,detail)=>({text,type:isOp?'opinion':'fact',typeLabel:isOp?'Мнение':'Факт',typeIcon:isOp?'💭':'📊',why,detail:detail||why});
+const SR=(text,type,why)=>({text,type,typeLabel:{fact:'факт',opinion:'мнение',fake:'фейк'}[type],why});
+const RC=(q,right,wrong,why)=>{const a=_sh([right,wrong]);return{q,a,correct:a.indexOf(right),why}};
+const FD=(from,sub,t)=>({from,sub,text:t.replace(/\[\[(.+?)\|(.+?)\]\]/g,'<span class="flag" data-why="$2">$1</span>')});
+
+const FAKE_DATA = [
+ {text:'Великая Китайская стена видна из космоса невооружённым глазом.',isFake:true,why:'Миф. Стена очень узкая и по цвету сливается с местностью.',detail:'Космонавты, в том числе китайский астронавт Ян Ливэй, говорили, что не смогли различить её с орбиты. Хорошо видны города, аэропорты и крупные дороги.'},
+ {text:'Молния может ударить в одно и то же место много раз.',isFake:false,why:'Факт. Высокие объекты «притягивают» разряды снова и снова.',detail:'Например, небоскрёб Эмпайр-стейт-билдинг поражается молнией в среднем около 20–25 раз в год.'},
+ {text:'Человек использует только 10% своего мозга.',isFake:true,why:'Миф. Снимки мозга показывают активность во всех его областях.',detail:'Разные задачи включают разные зоны, но за сутки мы используем практически весь мозг. Миф живёт в кино и рекламе «тренажёров для мозга».'},
+ {text:'Мёд при правильном хранении почти не портится.',isFake:false,why:'Факт. В нём мало воды и высокая кислотность — бактериям там тяжело.',detail:'Главное — плотно закрытая банка: мёд впитывает влагу из воздуха, и тогда он может забродить.'},
+ {text:'Летучие мыши слепые.',isFake:true,why:'Миф. Они видят, а эхолокация — дополнительный «инструмент».',detail:'Многие виды видят не хуже нас, а плодоядные летучие мыши ориентируются в основном зрением.'},
+ {text:'Вода в раковине всегда закручивается в разные стороны в разных полушариях.',isFake:true,why:'Миф. Для маленькой раковины вращение Земли слишком слабо.',detail:'Направление воронки зависит от формы раковины и того, как налили воду. Эффект Кориолиса заметен у циклонов, а не у умывальника.'},
+ {text:'С точки зрения ботаники банан — ягода, а клубника — нет.',isFake:false,why:'Факт. Ботаническое определение отличается от бытового.',detail:'У ягоды плод развивается из одной завязи и имеет мягкую оболочку с семенами внутри. У клубники семена снаружи, поэтому она «многоорешек».'},
+ {text:'Проглоченная жвачка переваривается семь лет.',isFake:true,why:'Миф. Она выходит естественным путём за несколько дней.',detail:'Жвачку не переварить полностью, но желудок и кишечник просто выводят её. Опасно только глотать огромное количество.'},
+ {text:'СРОЧНО! Telegram удалит аккаунты без фото. Перешли 5 друзьям, чтобы сохранить!',isFake:true,why:'Фейк: паника, срок и призыв переслать — признаки цепного спама.',detail:'У мессенджеров нет правил «спасения аккаунта пересылкой». Любую такую новость проверяй на официальном сайте или канале сервиса.'},
+ {text:'Свет от Солнца доходит до Земли примерно за 8 минут.',isFake:false,why:'Факт. Около 8 минут 20 секунд.',detail:'Расстояние до Солнца — около 150 млн км, а скорость света — около 300 000 км/с. Мы всегда видим Солнце таким, каким оно было 8 минут назад.'}
+];
+
+function startFakeGame() {
+    state.totalRounds = FAKE_DATA.length;
+    state.data.items = [...FAKE_DATA].sort(() => Math.random() - 0.5);
+    renderFakeRound();
+}
+
+function renderFakeRound() {
+    if (state.currentRound >= state.totalRounds) return finishGame();
+    const item = state.data.items[state.currentRound];
+    state.currentItem = {
+        ...item,
+        type: item.isFake ? 'fake' : 'fact',
+        typeLabel: item.isFake ? 'Фейк' : 'Факт',
+        typeIcon: item.isFake ? '🕵️' : '✅'
+    };
+    showProgress();
+    const content = document.getElementById('gameContent');
+    content.innerHTML = `
+        <div class="game-question">Это утверждение — фейк или факт?</div>
+        <div class="game-text">${item.text}</div>
+        <div class="answer-grid two">
+            <button class="answer-btn" data-ans="fake">🕵️ Фейк</button>
+            <button class="answer-btn" data-ans="fact">✅ Факт</button>
+        </div>
+        <div class="feedback" id="feedback"></div>
+    `;
+    const btns = content.querySelectorAll('.answer-btn');
+    btns.forEach(btn => btn.addEventListener('click', () => {
+        if (btns[0].disabled) return;
+        const chosen = btn.dataset.ans === 'fake';
+        const correct = chosen === item.isFake;
+        btns.forEach(b => b.disabled = true);
+        if (correct) {
+            btn.classList.add('correct'); sCorrect();
+            state.score += 15; state.correct++;
+            document.getElementById('scoreDisplay').textContent = state.score;
+        } else {
+            btn.classList.add('wrong'); sWrong();
+            state.errors++;
+            document.getElementById('errorsDisplay').textContent = state.errors;
+            btns.forEach(b => { if ((b.dataset.ans === 'fake') === item.isFake) b.classList.add('correct'); });
+        }
+        showFeedback(item, correct);
+    }));
+}
+
+function showFeedback(item, correct, customHtml) {
+    const fb = document.getElementById('feedback');
+    if (!fb) return;
+    fb.className = 'feedback show ' + (correct ? 'good' : 'bad');
+    if (customHtml) { fb.innerHTML = customHtml; return; }
+    fb.innerHTML = `
+        <strong>${correct ? '✅ Верно!' : '❌ Ошибка.'}</strong> ${item.why}
+        <div class="fb-actions">
+            <button class="btn" id="detailBtn">📖 Подробнее</button>
+            <button class="btn primary" id="nextBtn">Дальше →</button>
+        </div>
+    `;
+    document.getElementById('detailBtn').addEventListener('click', () => {
+        openDetailPage();
+    });
+    document.getElementById('nextBtn').addEventListener('click', () => {
+        state.currentRound++;
+        if (state.currentRound >= state.totalRounds) finishGame();
+        else nextRoundOfCurrentGame();
+    });
+}
+
+function nextRoundOfCurrentGame() {
+    switch (state.game) {
+        case 'fake':       renderFakeRound(); break;
+        case 'opinion':    renderOpinionRound(); break;
+        case 'manip':      renderManipRound(); break;
+        case 'logic':      renderLogicRound(); break;
+        default: finishGame();
+    }
+}
+
+function openDetailPage() {
+    const item = state.currentItem;
+    if (!item) return;
+    state.returnPage = 7;
+    const detail = document.getElementById('detailContent');
+    detail.innerHTML = `
+        <div class="detail-head">
+            <div class="detail-icon">${item.typeIcon || '📖'}</div>
+            <div class="detail-type ${item.type}">${item.typeLabel || 'Информация'}</div>
+        </div>
+        <div class="detail-statement">${item.text}</div>
+        <div class="detail-block">
+            <h3>💡 В чём суть</h3>
+            <p>${item.why || ''}</p>
+        </div>
+        <div class="detail-block">
+            <h3>📖 Подробнее</h3>
+            <p>${item.detail || item.why || 'Информация скоро появится.'}</p>
+        </div>
+        ${item.sourceName ? `
+        <div class="detail-block">
+            <h3>📚 Источник</h3>
+            <p><strong>${item.sourceName}</strong>${item.sourceType ? ' — ' + item.sourceType : ''}</p>
+            ${item.sourceUrl ? `<p style="margin-top:8px;"><a href="${item.sourceUrl}" target="_blank" rel="noopener">🔗 ${item.sourceUrl}</a></p>` : ''}
+        </div>
+        ` : ''}
+    `;
+    goToPage(9);
+}
+
+/* ==================== ФАКТ ИЛИ МНЕНИЕ ==================== */
+const OPINION_DATA = [
+ OP('В футболе на поле выходит по 11 игроков от каждой команды.',false,'Проверяемое правило игры.'),
+ OP('Пицца с ананасами — кощунство.',true,'Оценка вкуса, а не факт.'),
+ OP('Среднегодовая температура в Сочи выше, чем в Мурманске.',false,'Это можно проверить по метеоданным.'),
+ OP('Мобильные игры тупее консольных.',true,'«Тупее» — оценка, у неё нет единицы измерения.'),
+ OP('Население Земли превысило 8 миллиардов человек в 2022 году.',false,'Статистика ООН, её можно проверить.'),
+ OP('Фильмы 90-х были лучше нынешних.',true,'«Лучше» зависит от вкуса и ностальгии.'),
+ OP('Алмаз — самый твёрдый природный минерал по шкале Мооса.',false,'У него максимальное значение 10.'),
+ OP('Подростки слишком много времени проводят в телефонах.',true,'«Слишком много» — оценка, а не число. Факт был бы: «в среднем 4 часа в день» (с источником).','Любое слово вроде «слишком», «лучший», «ужасный» — сигнал, что перед тобой оценка.'),
+ OP('Математика — самый важный школьный предмет.',true,'Важность зависит от целей человека.'),
+ OP('Земля делает оборот вокруг Солнца примерно за 365 суток.',false,'Астрономический факт (точнее — около 365,25).')
+];
+
+function startOpinionGame() {
+    state.totalRounds = OPINION_DATA.length;
+    state.data.items = [...OPINION_DATA].sort(() => Math.random() - 0.5);
+    renderOpinionRound();
+}
+
+function renderOpinionRound() {
+    if (state.currentRound >= state.totalRounds) return finishGame();
+    const item = state.data.items[state.currentRound];
+    state.currentItem = item;
+    showProgress();
+    const content = document.getElementById('gameContent');
+    content.innerHTML = `
+        <div class="game-question">Это утверждение — факт или мнение?</div>
+        <div class="game-text">${item.text}</div>
+        <div class="answer-grid two">
+            <button class="answer-btn" data-ans="fact">📊 Факт</button>
+            <button class="answer-btn" data-ans="opinion">💭 Мнение</button>
+        </div>
+        <div class="feedback" id="feedback"></div>
+    `;
+    const btns = content.querySelectorAll('.answer-btn');
+    btns.forEach(btn => btn.addEventListener('click', () => {
+        if (btns[0].disabled) return;
+        const chosen = btn.dataset.ans;
+        const correct = chosen === item.type;
+        btns.forEach(b => b.disabled = true);
+        if (correct) {
+            btn.classList.add('correct'); sCorrect();
+            state.score += 15; state.correct++;
+            document.getElementById('scoreDisplay').textContent = state.score;
+        } else {
+            btn.classList.add('wrong'); sWrong();
+            state.errors++;
+            document.getElementById('errorsDisplay').textContent = state.errors;
+            btns.forEach(b => { if (b.dataset.ans === item.type) b.classList.add('correct'); });
+        }
+        showFeedback(item, correct);
+    }));
+}
+
+/* ==================== МАНИПУЛЯЦИЯ ==================== */
+const MANIP_DATA = [
+ MP('«Только сегодня! Осталось 2 штуки! Бери сейчас, пока не поздно!»','Искусственный дефицит и спешка',['Подмена тезиса','Ссылка на учёных','Круговая логика'],'Спешка и «последние штуки» не дают времени подумать.','Продавцы часто создают дефицит, чтобы ты купил импульсивно. Задай себе вопрос: что изменится, если я подожду день?'),
+ MP('«Все топовые блогеры уже пользуются этим кремом — значит, он работает».','Ссылка на «звёзд» и массовость',['Эмоциональный шантаж','Ложная дилемма','Запугивание'],'Популярность не доказывает качество.','Блогеры нередко получают деньги за рекламу. Ищи независимые проверки и состав.'),
+ MP('«Не вступишь в наш чат — останешься один навсегда».','Запугивание и ложная дилемма',['Лесть','Ссылка на науку','Придуманная цепочка'],'Предлагают только два варианта и пугают худшим.','Реальных вариантов гораздо больше: общаться в других местах, вступить позже, вообще не вступать.'),
+ MP('«Ты же умный человек, ты не станешь сомневаться в очевидном».','Лесть как давление',['Совпадение — не причина','Подмена понятий','Скрытая реклама'],'Похвала используется, чтобы ты перестал проверять.','Сомневаться и проверять — признак ума, а не его отсутствия.'),
+ MP('«ШОК! Врачи скрывают это от вас! Смотри, пока не удалили!»','Эмоциональная накачка и «тайное знание»',['Выборочные факты','Переход на личности','Поспешное обобщение'],'Шок, тайна и срок — давление на эмоции вместо доказательств.','Заголовки с «скрывают» и «пока не удалили» — типичный кликбейт.'),
+ MP('«Мы же друзья? Друзья не отказывают в такой мелочи — дай списать».','Давление через дружбу',['Ссылка на источник','Совпадение — не причина','Подмена тезиса'],'Дружбу превращают в рычаг давления.','Настоящий друг не ставит условие «или делаешь — или не друг».')
+];
+
+function startManipGame() {
+    state.totalRounds = MANIP_DATA.length;
+    state.data.items = [...MANIP_DATA].sort(() => Math.random() - 0.5);
+    renderManipRound();
+}
+
+function renderManipRound() {
+    if (state.currentRound >= state.totalRounds) return finishGame();
+    const item = state.data.items[state.currentRound];
+    state.currentItem = { ...item, sourceName: item.source, sourceUrl: null };
+    showProgress();
+    const content = document.getElementById('gameContent');
+    content.innerHTML = `
+        <div class="game-question">Какой приём манипуляции использован?</div>
+        <div class="game-text">${item.text}</div>
+        <div class="answer-grid four">
+            ${item.options.map((o, i) => `<button class="answer-btn" data-i="${i}">${o}</button>`).join('')}
+        </div>
+        <div class="feedback" id="feedback"></div>
+    `;
+    const btns = content.querySelectorAll('.answer-btn');
+    btns.forEach(btn => btn.addEventListener('click', () => {
+        if (btns[0].disabled) return;
+        const i = parseInt(btn.dataset.i);
+        const correct = i === item.correct;
+        btns.forEach(b => b.disabled = true);
+        if (correct) {
+            btn.classList.add('correct'); sCorrect();
+            state.score += 20; state.correct++;
+            document.getElementById('scoreDisplay').textContent = state.score;
+        } else {
+            btn.classList.add('wrong'); sWrong();
+            state.errors++;
+            document.getElementById('errorsDisplay').textContent = state.errors;
+            btns[item.correct].classList.add('correct');
+        }
+        state.currentItem.correctText = item.options[item.correct];
+        showFeedback(item, correct);
+    }));
+}
+
+/* ==================== ЛОГИЧЕСКАЯ ОШИБКА ==================== */
+const LOGIC_DATA = [
+ LG('«Петух кричит утром — и встаёт солнце. Значит, петух вызывает рассвет?»','Совпадение — не причина',['Переход на личности','Ссылка на авторитет','Ложная дилемма'],'Два события могут случаться одно за другим, но второе не обязательно вызвано первым. Солнце встаёт само, петух просто кричит в это же время.'),
+ LG('«Либо ты за нас, либо ты против нас. Третьего не дано».','Ложная дилемма',['Придуманная цепочка','Круговое рассуждение','Поспешное обобщение'],'Есть и другие варианты: нейтральная позиция, частичное согласие.'),
+ LG('«Мой сосед из другого города нагрубил, значит, все оттуда грубые».','Поспешное обобщение',['Апелляция к незнанию','Совпадение — не причина','Подмена тезиса'],'Один случай нельзя распространять на всех.'),
+ LG('«Этот учёный в разводе — зачем верить его теории?»','Переход на личности',['Придуманная цепочка','Ложная дилемма','Круговое рассуждение'],'Оценивать надо аргументы, а не личную жизнь автора.'),
+ LG('«Разрешишь телефон на перемене — они сядут в телефонах на уроке, потом перестанут учиться вообще».','Придуманная цепочка',['Совпадение — не причина','Ссылка на авторитет','Подмена понятий'],'Цепочка страшных последствий без доказательств каждого шага.'),
+ LG('«Никто не доказал, что инопланетян нет. Значит, они существуют».','Апелляция к незнанию',['Переход на личности','Ложная дилемма','Придуманная цепочка'],'Отсутствие опровержения не является доказательством. Бремя доказательства — на том, кто утверждает.'),
+ LG('«Это правда, потому что так написано в книге. А книга права, потому что в ней только правда».','Круговое рассуждение',['Совпадение — не причина','Поспешное обобщение','Ссылка на толпу'],'Вывод уже заложен в посылке — аргумента на самом деле нет.')
+];
+
+function startLogicGame() {
+    state.totalRounds = LOGIC_DATA.length;
+    state.data.items = [...LOGIC_DATA].sort(() => Math.random() - 0.5);
+    renderLogicRound();
+}
+
+function renderLogicRound() {
+    if (state.currentRound >= state.totalRounds) return finishGame();
+    const item = state.data.items[state.currentRound];
+    state.currentItem = { ...item, sourceName: item.source, sourceUrl: null };
+    showProgress();
+    const content = document.getElementById('gameContent');
+    content.innerHTML = `
+        <div class="game-question">Где логическая ошибка?</div>
+        <div class="game-text">${item.text}</div>
+        <div class="answer-grid four">
+            ${item.options.map((o, i) => `<button class="answer-btn" data-i="${i}">${o}</button>`).join('')}
+        </div>
+        <div class="feedback" id="feedback"></div>
+    `;
+    const btns = content.querySelectorAll('.answer-btn');
+    btns.forEach(btn => btn.addEventListener('click', () => {
+        if (btns[0].disabled) return;
+        const i = parseInt(btn.dataset.i);
+        const correct = i === item.correct;
+        btns.forEach(b => b.disabled = true);
+        if (correct) {
+            btn.classList.add('correct'); sCorrect();
+            state.score += 20; state.correct++;
+            document.getElementById('scoreDisplay').textContent = state.score;
+        } else {
+            btn.classList.add('wrong'); sWrong();
+            state.errors++;
+            document.getElementById('errorsDisplay').textContent = state.errors;
+            btns[item.correct].classList.add('correct');
+        }
+        state.currentItem.correctText = item.options[item.correct];
+        showFeedback(item, correct);
+    }));
+}
+
+/* ==================== 2 ПРАВДЫ, 1 ЛОЖЬ ==================== */
+function startTwoTruthsGame() {
+    state.data.phrases = ['', '', '']; state.data.lieIndex = 1;
+    renderTwoTruthsP1();
+}
+
+function renderTwoTruthsP1() {
+    document.getElementById('headerExtra').innerHTML = '<span class="turn">Ход: Игрок 1</span>';
+    const content = document.getElementById('gameContent');
+    content.innerHTML = `
+        <div class="player-panel">
+            <div class="p-title">🎭 Игрок 1, твой ход!</div>
+            <div class="p-desc">Придумай <strong>три утверждения</strong>: два правдивых и одно ложное. Затем отметь ложное.</div>
+        </div>
+        <div class="input-wrap"><input class="text-input" id="p1a" placeholder="Утверждение 1" maxlength="80"></div>
+        <div class="input-wrap"><input class="text-input" id="p1b" placeholder="Утверждение 2" maxlength="80"></div>
+        <div class="input-wrap"><input class="text-input" id="p1c" placeholder="Утверждение 3" maxlength="80"></div>
+        <div class="game-question" style="font-size:1rem; margin-top:20px;">Какое утверждение — ложь?</div>
+        <div class="answer-grid" style="grid-template-columns: repeat(3, 1fr); max-width:640px;">
+            <button class="answer-btn" data-pick="0">1</button>
+            <button class="answer-btn" data-pick="1">2</button>
+            <button class="answer-btn" data-pick="2">3</button>
+        </div>
+        <button class="btn primary" id="continueBtn" style="margin-top:20px; display:none;">Передать ход Игроку 2 →</button>
+    `;
+    let lieIndex = null;
+    content.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', () => {
+        content.querySelectorAll('[data-pick]').forEach(x => x.classList.remove('correct'));
+        b.classList.add('correct');
+        lieIndex = parseInt(b.dataset.pick);
+        document.getElementById('continueBtn').style.display = 'inline-block';
+    }));
+    document.getElementById('continueBtn').addEventListener('click', () => {
+        const a = document.getElementById('p1a').value.trim();
+        const b = document.getElementById('p1b').value.trim();
+        const c = document.getElementById('p1c').value.trim();
+        if (!a || !b || !c) { alert('Заполни все три поля!'); return; }
+        if (lieIndex === null) { alert('Отметь, какое утверждение ложное'); return; }
+        state.data.phrases = [a, b, c]; state.data.lieIndex = lieIndex;
+        sClick(); renderTwoTruthsP2();
+    });
+}
+
+function renderTwoTruthsP2() {
+    document.getElementById('headerExtra').innerHTML = '<span class="turn">Ход: Игрок 2</span>';
+    const content = document.getElementById('gameContent');
+    const phrases = state.data.phrases;
+    content.innerHTML = `
+        <div class="player-panel">
+            <div class="p-title">🕵️ Игрок 2, теперь твой ход!</div>
+            <div class="p-desc">Игрок 1 загадал три утверждения. Одно — ложь. Угадай какое!</div>
+        </div>
+        <div class="pair-list">
+            ${phrases.map((p, i) => `<div class="pair-item" data-i="${i}"><span class="num">${i+1}</span>${p}</div>`).join('')}
+        </div>
+        <div class="feedback" id="feedback"></div>
+    `;
+    content.querySelectorAll('.pair-item').forEach(item => item.addEventListener('click', () => {
+        const i = parseInt(item.dataset.i);
+        const correct = i === state.data.lieIndex;
+        content.querySelectorAll('.pair-item').forEach(x => x.style.pointerEvents = 'none');
+        item.classList.add(correct ? 'correct-pick' : 'wrong-pick');
+        if (!correct) content.querySelectorAll('.pair-item')[state.data.lieIndex].classList.add('correct-pick');
+        const fb = document.getElementById('feedback');
+        fb.className = 'feedback show ' + (correct ? 'good' : 'bad');
+        fb.innerHTML = correct
+            ? '✅ Верно! Игрок 2 угадал ложь.'
+            : `❌ Не угадал. Ложным было утверждение №${state.data.lieIndex + 1}.`;
+        if (correct) { state.score += 40; state.correct++; } else { state.errors++; }
+        document.getElementById('scoreDisplay').textContent = state.score;
+        document.getElementById('errorsDisplay').textContent = state.errors;
+        sCorrect();
+        setTimeout(() => {
+            state.data.phrases = ['', '', '']; state.data.lieIndex = 1;
+            renderTwoTruthsP1();
+        }, 3000);
+    }));
+}
+
+/* ==================== МОЗГОВОЙ ШТУРМ ==================== */
+const BRAINSTORM_TOPICS = [
+    'Почему важно проверять источник новости перед репостом?',
+    'Как соцсети влияют на наше мнение?',
+    'Что делать, если друг делится сомнительной инфой?',
+    'Почему фейки разлетаются быстрее правды?',
+    'Как отличить мнение блогера от факта?',
+];
+
+function startBrainstormGame() {
+    state.data.topic = BRAINSTORM_TOPICS[Math.floor(Math.random() * BRAINSTORM_TOPICS.length)];
+    state.data.player = 1; state.data.args = []; state.data.timeLeft = 60;
+    renderBrainstorm();
+}
+
+function renderBrainstorm() {
+    document.getElementById('headerExtra').innerHTML = `<span class="turn">Ход: Игрок ${state.data.player}</span>`;
+    const content = document.getElementById('gameContent');
+    content.innerHTML = `
+        <div class="player-panel">
+            <div class="p-title">💡 Мозговой штурм</div>
+            <div class="p-desc">Тема: <strong>«${state.data.topic}»</strong><br>По очереди вводите аргументы. 60 секунд!</div>
+        </div>
+        <div class="timer-display" id="timer">${state.data.timeLeft}</div>
+        <div class="input-wrap" style="display:flex; gap:10px;">
+            <input class="text-input" id="argInput" placeholder="Аргумент + Enter" maxlength="120" style="flex:1;">
+            <button class="btn primary" id="addBtn" style="padding:14px 24px;">→</button>
+        </div>
+        <div class="pair-list" id="argList" style="max-height:220px; overflow-y:auto;"></div>
+        <div class="feedback" id="feedback"></div>
+    `;
+    const list = document.getElementById('argList');
+    const input = document.getElementById('argInput');
+    const addBtn = document.getElementById('addBtn');
+
+    function refreshList() {
+        list.innerHTML = state.data.args.map((a) =>
+            `<div class="pair-item" style="cursor:default;"><span class="num" style="background:${a.player === 1 ? '#6C63FF' : '#FF6584'};">${a.player}</span>${a.text}</div>`
+        ).join('');
+        list.scrollTop = list.scrollHeight;
+    }
+    refreshList();
+
+    function addArgument() {
+        const text = input.value.trim();
+        if (!text) return;
+        state.data.args.push({ player: state.data.player, text });
+        state.score += 10;
+        document.getElementById('scoreDisplay').textContent = state.score;
+        sClick(); input.value = '';
+        state.data.player = state.data.player === 1 ? 2 : 1;
+        document.querySelector('.player-panel .p-title').textContent = `💡 Ход: Игрок ${state.data.player}`;
+        document.getElementById('headerExtra').innerHTML = `<span class="turn">Ход: Игрок ${state.data.player}</span>`;
+        refreshList();
+    }
+    addBtn.addEventListener('click', addArgument);
+    input.addEventListener('keypress', e => { if (e.key === 'Enter') addArgument(); });
+    input.focus();
+
+    if (state.timer) clearInterval(state.timer);
+    state.timer = setInterval(() => {
+        state.data.timeLeft -= 1;
+        const t = document.getElementById('timer');
+        if (t) { t.textContent = state.data.timeLeft; if (state.data.timeLeft <= 10) t.classList.add('warning'); }
+        if (state.data.timeLeft <= 0) { clearInterval(state.timer); state.timer = null; finishBrainstorm(); }
+    }, 1000);
+}
+
+function finishBrainstorm() {
+    const content = document.getElementById('gameContent');
+    const totalArgs = state.data.args.length;
+    const p1 = state.data.args.filter(a => a.player === 1).length;
+    const p2 = state.data.args.filter(a => a.player === 2).length;
+    content.innerHTML = `
+        <div class="player-panel">
+            <div class="p-title">⏰ Время вышло!</div>
+            <div class="p-desc">Тема: <strong>«${state.data.topic}»</strong></div>
+        </div>
+        <div class="game-question">Всего аргументов: <strong>${totalArgs}</strong></div>
+        <div class="stat-box">
+            <p><strong>Игрок 1:</strong> ${p1} аргументов</p>
+            <p><strong>Игрок 2:</strong> ${p2} аргументов</p>
+        </div>
+        <div class="feedback show good" style="max-width:640px;">
+            <strong>🎯 Отличная работа!</strong> Мозговой штурм — про умение думать вместе.
+        </div>
+        <div class="nav-buttons">
+            <button class="btn primary" onclick="startBrainstormGame()">🔄 Ещё раунд</button>
+            <button class="btn" onclick="finishGame()">Завершить</button>
+        </div>
+    `;
+    sWin();
+    if (totalArgs >= 6) state.score += 30;
+    document.getElementById('scoreDisplay').textContent = state.score;
+}
+
+/* ==================== ПИНГ-ПОНГ АРГУМЕНТОВ ==================== */
+const PONG_TOPICS = [
+    { topic: 'Соцсети приносят больше пользы, чем вреда', side1: 'ЗА', side2: 'ПРОТИВ' },
+    { topic: 'Смартфоны надо запретить в школах', side1: 'ЗА', side2: 'ПРОТИВ' },
+    { topic: 'Блогеры должны нести ответственность за свой контент', side1: 'ЗА', side2: 'ПРОТИВ' },
+    { topic: 'Каждый имеет право на анонимность в интернете', side1: 'ЗА', side2: 'ПРОТИВ' },
+];
+
+function startArguPongGame() {
+    const t = PONG_TOPICS[Math.floor(Math.random() * PONG_TOPICS.length)];
+    state.data.topic = t.topic; state.data.side1 = t.side1; state.data.side2 = t.side2;
+    state.data.player = 1; state.data.argCount = { 1: 0, 2: 0 };
+    renderPong();
+}
+
+function renderPong() {
+    const side = state.data.player === 1 ? state.data.side1 : state.data.side2;
+    document.getElementById('headerExtra').innerHTML = `<span class="turn">Ход: Игрок ${state.data.player} (${side})</span>`;
+    const content = document.getElementById('gameContent');
+    content.innerHTML = `
+        <div class="player-panel">
+            <div class="p-title">🏓 Пинг-понг аргументов</div>
+            <div class="p-desc">Тема: <strong>«${state.data.topic}»</strong><br>Ты — Игрок ${state.data.player}, твоя позиция: <strong>${side}</strong></div>
+        </div>
+        <div class="timer-display" id="timer">15</div>
+        <div class="game-question">Приведи аргумент за 15 секунд!</div>
+        <div class="input-wrap" style="display:flex; gap:10px;">
+            <input class="text-input" id="argInput" placeholder="Аргумент..." maxlength="120" style="flex:1;" autofocus>
+            <button class="btn primary" id="addBtn" style="padding:14px 24px;">✓</button>
+        </div>
+        <div class="feedback" id="feedback"></div>
+        <div class="stat-box" id="scoreBox" style="margin-top:16px;">
+            <p><strong>Игрок 1:</strong> ${state.data.argCount[1]} аргументов</p>
+            <p><strong>Игрок 2:</strong> ${state.data.argCount[2]} аргументов</p>
+        </div>
+    `;
+    const input = document.getElementById('argInput');
+    const addBtn = document.getElementById('addBtn');
+
+    function submitArg() {
+        const text = input.value.trim();
+        if (!text) return;
+        state.data.argCount[state.data.player]++;
+        state.score += 15;
+        document.getElementById('scoreDisplay').textContent = state.score;
+        sClick();
+        state.data.player = state.data.player === 1 ? 2 : 1;
+        clearInterval(state.timer); state.timer = null;
+        renderPong();
+    }
+    addBtn.addEventListener('click', submitArg);
+    input.addEventListener('keypress', e => { if (e.key === 'Enter') submitArg(); });
+    input.focus();
+
+    state.data.timer = 15;
+    if (state.timer) clearInterval(state.timer);
+    state.timer = setInterval(() => {
+        state.data.timer -= 1;
+        const t = document.getElementById('timer');
+        if (t) { t.textContent = state.data.timer; if (state.data.timer <= 5) t.classList.add('warning'); }
+        if (state.data.timer <= 0) {
+            clearInterval(state.timer); state.timer = null;
+            const loser = state.data.player;
+            const winner = loser === 1 ? 2 : 1;
+            const c = document.getElementById('gameContent');
+            c.innerHTML = `
+                <div class="player-panel">
+                    <div class="p-title">⏰ Время вышло!</div>
+                    <div class="p-desc">Игрок ${loser} не успел придумать аргумент.</div>
+                </div>
+                <div class="game-question">🏆 Победил Игрок ${winner}!</div>
+                <div class="stat-box">
+                    <p><strong>Игрок 1:</strong> ${state.data.argCount[1]}</p>
+                    <p><strong>Игрок 2:</strong> ${state.data.argCount[2]}</p>
+                </div>
+                <div class="nav-buttons">
+                    <button class="btn primary" onclick="startArguPongGame()">🔄 Новый раунд</button>
+                    <button class="btn" onclick="finishGame()">Завершить</button>
+                </div>
+            `;
+            sWin();
+            state.score += 20;
+            document.getElementById('scoreDisplay').textContent = state.score;
+        }
+    }, 1000);
+}
+
+/* ==================== СОРТИРОВКА ==================== */
+const SORT_DATA = [
+ SR('Телефон надо заряжать до 100%, иначе батарея «сядет» навсегда.','fake','Современные литий-ионные батареи не боятся частичной зарядки.'),
+ SR('Лучший жанр музыки — рок.','opinion','«Лучший» — оценка вкуса.'),
+ SR('Вода состоит из водорода и кислорода.','fact','Формула H₂O — научный факт.'),
+ SR('Если фото есть в интернете, значит, оно настоящее.','fake','Фото легко подделать и вырвать из контекста.'),
+ SR('Утром учиться тяжелее, чем вечером.','opinion','Зависит от человека — это не закон природы.'),
+ SR('Сердце человека перекачивает кровь по всему телу.','fact','Это базовая функция сердца.'),
+ SR('Эта программа взломает любой Wi-Fi за 5 секунд — скачай по ссылке!','fake','Сказка для обмана: по ссылке обычно вирус.'),
+ SR('Кошки лучше собак.','opinion','Сравнение без критерия — вкус.'),
+ SR('Эверест — высочайшая вершина Земли над уровнем моря.','fact','Высота — измеряемая величина (около 8849 м).'),
+ SR('Летом Земля ближе к Солнцу, поэтому тепло.','fake','Миф. Тепло из-за наклона оси, а не расстояния.'),
+ SR('Школьная форма делает учёбу скучнее.','opinion','Субъективная оценка.'),
+ SR('В Москве есть метро.','fact','Проверяемый факт.')
+];
+
+function startSortGame() {
+    state.totalRounds = SORT_DATA.length;
+    state.data.items = [...SORT_DATA].sort(() => Math.random() - 0.5);
+    renderSortRound();
+}
+
+function renderSortRound() {
+    if (state.currentRound >= state.totalRounds) return finishGame();
+    const item = state.data.items[state.currentRound];
+    showProgress();
+    const content = document.getElementById('gameContent');
+    content.innerHTML = `
+        <div class="game-question">Куда отнести это утверждение?</div>
+        <div class="sort-card">${item.text}</div>
+        <div class="sort-bins">
+            <div class="sort-bin" data-type="fact">📊 ФАКТ</div>
+            <div class="sort-bin" data-type="opinion">💭 МНЕНИЕ</div>
+            <div class="sort-bin" data-type="fake">🕵️ ФЕЙК</div>
+        </div>
+        <div class="feedback" id="feedback"></div>
+    `;
+    content.querySelectorAll('.sort-bin').forEach(bin => bin.addEventListener('click', () => {
+        if (content.querySelector('.sort-bin').style.pointerEvents === 'none') return;
+        content.querySelectorAll('.sort-bin').forEach(b => b.style.pointerEvents = 'none');
+        const chosen = bin.dataset.type;
+        const correct = chosen === item.type;
+        if (correct) {
+            bin.classList.add('correct'); sCorrect();
+            state.score += 15; state.correct++;
+            document.getElementById('scoreDisplay').textContent = state.score;
+        } else {
+            bin.classList.add('wrong'); sWrong();
+            content.querySelector(`.sort-bin[data-type="${item.type}"]`).classList.add('correct');
+            state.errors++;
+            document.getElementById('errorsDisplay').textContent = state.errors;
+        }
+        const fb = document.getElementById('feedback');
+        fb.className = 'feedback show ' + (correct ? 'good' : 'bad');
+        fb.innerHTML = `<strong>${correct ? '✅ Верно!' : '❌ Неверно.'}</strong> Это <b>${item.typeLabel}</b>. ${item.why}
+            <div class="fb-actions"><button class="btn primary" id="nextBtn">Дальше →</button></div>`;
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            state.currentRound++;
+            if (state.currentRound >= state.totalRounds) finishGame();
+            else renderSortRound();
+        });
+    }));
+}
+
+/* ==================== ГОНКА НА ВРЕМЯ ==================== */
+const RACE_DATA = [
+ RC('Сколько планет в Солнечной системе?','8','9','Восемь. Плутон с 2006 года — карликовая планета.'),
+ RC('Какой газ преобладает в атмосфере Земли?','Азот','Кислород','Азот — около 78%.'),
+ RC('Какая планета ближе всего к Солнцу?','Меркурий','Венера','Меркурий.'),
+ RC('Кто написал картину «Мона Лиза»?','Леонардо да Винчи','Микеланджело','Леонардо да Винчи.'),
+ RC('Сколько секунд в одном часе?','3600','360','60 × 60 = 3600.'),
+ RC('Самый большой океан?','Тихий','Атлантический','Тихий океан.'),
+ RC('Что такое фишинг?','Обман через поддельные сайты и письма','Проверка скорости интернета','Мошенники выманивают пароли и данные.'),
+ RC('Пришла «шокирующая» новость в чате. Что делать первым?','Проверить источник','Сразу переслать друзьям','Сначала СТОП и проверка.'),
+ RC('Что значит замочек в адресной строке?','Соединение зашифровано, но сайт может быть мошенническим','Сайт точно безопасен','Замочек = шифрование, а не честность владельца.'),
+ RC('Скриншот переписки — это надёжное доказательство?','Нет, его легко подделать','Да, всегда','Скриншот можно отредактировать за минуту.'),
+ RC('Кто первым ступил на Луну?','Нил Армстронг','Юрий Гагарин','Нил Армстронг, 1969 год.'),
+ RC('Химический символ золота?','Au','Ag','Au — золото, Ag — серебро.'),
+ RC('Сколько сторон у шестиугольника?','6','8','Шесть.'),
+ RC('Сколько будет 15% от 200?','30','15','200 × 0,15 = 30.'),
+ RC('Двухфакторная защита — это…','Вход с вторым подтверждением, например кодом','Два одинаковых пароля','Пароль + код из приложения или SMS.')
+];
+
+function startRaceGame() {
+    state.data.idx = 0;
+    state.data.timeLeft = 90;
+    state.data.active = true;
+    state.data.answered = false;
+    if (state.timer) clearInterval(state.timer);
+    state.timer = setInterval(() => {
+        state.data.timeLeft--;
+        const t = document.querySelector('.race-timer');
+        if (t) {
+            t.textContent = state.data.timeLeft;
+            if (state.data.timeLeft <= 15) t.classList.add('warning');
+        }
+        if (state.data.timeLeft <= 0) {
+            clearInterval(state.timer); state.timer = null;
+            state.data.active = false;
+            finishRace();
+        }
+    }, 1000);
+    renderRaceRound();
+}
+
+function renderRaceRound() {
+    if (!state.data.active) return;
+    if (state.data.idx >= RACE_DATA.length) {
+        clearInterval(state.timer); state.timer = null;
+        state.data.active = false;
+        return finishRace();
+    }
+    state.data.answered = false;
+    const item = RACE_DATA[state.data.idx];
+    const content = document.getElementById('gameContent');
+    content.innerHTML = `
+        <div class="race-timer">${state.data.timeLeft}</div>
+        <div class="game-question">${item.q}</div>
+        <div class="answer-grid two">
+            ${item.a.map((o, i) => `<button class="answer-btn" data-i="${i}">${o}</button>`).join('')}
+        </div>
+        <div class="feedback" id="feedback"></div>
+    `;
+    const btns = content.querySelectorAll('.answer-btn');
+    btns.forEach(btn => btn.addEventListener('click', () => {
+        if (state.data.answered || !state.data.active) return;
+        state.data.answered = true;
+        const i = parseInt(btn.dataset.i);
+        const correct = i === item.correct;
+        btns.forEach((b, idx) => {
+            b.disabled = true;
+            if (idx === item.correct) b.classList.add('correct');
+            else if (idx === i) b.classList.add('wrong');
+        });
+        if (correct) {
+            state.score += 15; state.correct++;
+            document.getElementById('scoreDisplay').textContent = state.score;
+            sCorrect();
+        } else {
+            state.errors++;
+            document.getElementById('errorsDisplay').textContent = state.errors;
+            sWrong();
+        }
+        const fb = document.getElementById('feedback');
+        fb.className = 'feedback show ' + (correct ? 'good' : 'bad');
+        fb.innerHTML = `
+            <strong>${correct ? '✅ Верно!' : '❌ Мимо.'}</strong> ${item.why}
+            <div class="fb-actions"><button class="btn primary" id="nextRaceBtn">Далее →</button></div>
+        `;
+        document.getElementById('nextRaceBtn').addEventListener('click', () => {
+            if (!state.data.active) return;
+            state.data.idx++;
+            renderRaceRound();
+        });
+    }));
+}
+
+function finishRace() {
+    if (state.data.timeLeft > 0) { state.score += Math.min(30, state.data.timeLeft); document.getElementById('scoreDisplay').textContent = state.score; }
+    const content = document.getElementById('gameContent');
+    content.innerHTML = `
+        <div class="player-panel">
+            <div class="p-title">${state.data.timeLeft>0?'🏁 Все вопросы пройдены! +'+Math.min(30,state.data.timeLeft)+' бонус за скорость':'⏰ Время вышло!'}</div>
+            <div class="p-desc">Правильных: <strong>${state.correct}</strong> из <strong>${RACE_DATA.length}</strong></div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn primary" id="retryRace">🔄 Ещё раз</button>
+            <button class="btn" id="endRace">Завершить</button>
+        </div>
+    `;
+    sWin();
+    document.getElementById('retryRace').addEventListener('click', () => { resetState(); startRaceGame(); });
+    document.getElementById('endRace').addEventListener('click', () => finishGame());
+}
+
+/* ==================== ФЕЙК В ЛЕНТЕ ==================== */
+const FEED_DATA = [
+ FD('Чат «Класс 9Б»','пересланное сообщение','[[ВНИМАНИЕ!!! Рассылают вирус в картинке «С Новым годом».|«ВНИМАНИЕ!!!» — крик, чтобы ты не думал, а пересылал.]] Откроешь — [[телефон сгорит за 10 минут.|Картинка не может сжечь телефон — выдуманная угроза.]] [[Мне рассказал знакомый знакомого из крупной IT-компании.|Цепочка «знакомый знакомого» — проверить невозможно.]] [[Срочно перешли всем контактам, пока не поздно!|Призыв срочно рассылать — признак цепного спама.]]'),
+ FD('Канал «Всё о здоровье»','реклама','[[Врачи в шоке!|Эмоциональная приманка вместо фактов.]] Этот [[чудо-напиток за 3 дня снимает любые болезни.|Лекарства «от всего» не существует.]] [[Результат подтверждён учёными.|«Учёными» без имён и ссылок — пустая отсылка к авторитету.]] Акция [[только сегодня, осталось 7 банок!|Искусственный дефицит заставляет купить не думая.]]'),
+ FD('Анонимный паблик','пост, 14 тыс. репостов','[[Говорят, что с понедельника отменят все контрольные.|«Говорят» — источник не назван.]] Это [[100% правда, мне лично сказала директор.|Проверить нельзя: ни ссылки, ни документа.]] Не веришь? [[Значит, ты просто глупый.|Оскорбление вместо доказательств.]]')
+];
+
+function startFeedGame() {
+    state.data.idx = 0;
+    state.data.found = 0;
+    state.data.foundInCurrent = 0;
+    state.data.totalInCurrent = 0;
+    state.data.messageDone = false;
+    renderFeedRound();
+}
+
+function renderFeedRound() {
+    if (state.data.idx >= FEED_DATA.length) return finishGame();
+    const msg = FEED_DATA[state.data.idx];
+    state.data.foundInCurrent = 0;
+    state.data.messageDone = false;
+
+    const content = document.getElementById('gameContent');
+    content.innerHTML = `
+        <div class="game-question">Найди все подозрительные фразы в сообщении — нажимай на них!</div>
+        <div class="fake-post">
+            <div class="fake-post-header">
+                <div class="fake-post-avatar">📱</div>
+                <div>
+                    <div class="fake-post-name">${msg.from}</div>
+                    <div class="fake-post-sub">${msg.sub}</div>
+                </div>
+            </div>
+            <div class="fake-post-body" id="feedBody">${msg.text}</div>
+        </div>
+        <div class="feed-counter" id="feedCounter">Найдено 0 из 0</div>
+        <div class="feedback" id="feedback" style="min-height:0; padding:0; margin:0;"></div>
+        <div class="nav-buttons" id="feedNav" style="margin-top:16px; display:none;">
+            <button class="btn primary" id="nextMsgBtn">Следующее сообщение →</button>
+        </div>
+    `;
+
+    const flags = content.querySelectorAll('.flag');
+    state.data.totalInCurrent = flags.length;
+    updateFeedCounter();
+
+    flags.forEach(f => {
+        f.addEventListener('click', () => {
+            if (f.classList.contains('revealed')) return;
+            f.classList.add('revealed');
+            state.data.found++;
+            state.data.foundInCurrent++;
+            state.score += 10;
+            state.correct++;
+            document.getElementById('scoreDisplay').textContent = state.score;
+            sCorrect();
+            updateFeedCounter();
+
+            const fb = document.getElementById('feedback');
+            fb.className = 'feedback show good';
+            fb.style.padding = '16px 20px';
+            fb.style.margin = '12px 0';
+            fb.innerHTML = `<strong>🎭 ${f.dataset.why}</strong>`;
+
+            if (state.data.foundInCurrent === state.data.totalInCurrent) {
+                state.data.messageDone = true;
+                const nav = document.getElementById('feedNav');
+                nav.style.display = 'flex';
+                const btn = document.getElementById('nextMsgBtn');
+                if (state.data.idx === FEED_DATA.length - 1) {
+                    btn.textContent = '🏁 Завершить игру';
+                }
+                btn.onclick = () => {
+                    state.data.idx++;
+                    if (state.data.idx >= FEED_DATA.length) finishGame();
+                    else renderFeedRound();
+                };
+            }
+        });
+    });
+}
+
+function updateFeedCounter() {
+    const c = document.getElementById('feedCounter');
+    if (c) c.textContent = `Найдено ${state.data.foundInCurrent} из ${state.data.totalInCurrent}`;
+}
+
+/* ==================== ПОЧИНИ АРГУМЕНТ ==================== */
+const FIX_DATA = [
+ {broken:'«Все блогеры рекламируют эти кроссовки, значит, они лучшие».',etalon:'Реклама ≠ качество: блогеры могут получать деньги за показ. Сравни характеристики, независимые отзывы и цену.'},
+ {broken:'«Если не пойдёшь со мной на вечеринку, ты мне не друг».',etalon:'Это ложная дилемма. Можно дружить и не ходить на вечеринки. Один отказ не отменяет дружбу.'},
+ {broken:'«Этому сайту нельзя верить: его делали школьники».',etalon:'Возраст авторов — не доказательство ошибки. Проверь сами факты, источники и ссылки на странице.'},
+ {broken:'«Разрешим одну жвачку на уроке — завтра все начнут есть, и класс превратится в столовую».',etalon:'Придуманная цепочка: каждый следующий шаг ничем не подтверждён. Можно обсудить конкретное правило и последствия.'},
+ {broken:'«Это правда, потому что так сказал популярный стример».',etalon:'Популярность не равна компетентности. Нужны проверяемые факты и источники, а не только имя автора.'}
+];
+
+function startFixArgGame() {
+    state.data.items = [...FIX_DATA].sort(() => Math.random() - 0.5);
+    state.data.idx = 0;
+    renderFixArgRound();
+}
+
+function renderFixArgRound() {
+    if (state.data.idx >= state.data.items.length) return finishGame();
+    const item = state.data.items[state.data.idx];
+    const content = document.getElementById('gameContent');
+    content.innerHTML = `
+        <div class="game-question">Почини аргумент: перепиши его так, чтобы он был корректен</div>
+        <div class="broken-arg">${item.broken}</div>
+        <textarea class="fixarea" id="fixInput" placeholder="Твоя версия аргумента... (или пропусти)"></textarea>
+        <div class="nav-buttons" style="margin-top:14px;">
+            <button class="btn primary" id="showEtalon">Показать эталон</button>
+            <button class="btn" id="nextFix">Дальше →</button>
+            <button class="btn secondary" id="skipFix">Пропустить</button>
+        </div>
+        <div class="etalon-box" id="etalonBox"><strong>Эталон:</strong> ${item.etalon}</div>
+    `;
+    document.getElementById('showEtalon').addEventListener('click', () => {
+        document.getElementById('etalonBox').classList.add('show');
+        state.score += 10;
+        state.correct++;
+        document.getElementById('scoreDisplay').textContent = state.score;
+        sCorrect();
+    });
+    document.getElementById('nextFix').addEventListener('click', () => {
+        const val = document.getElementById('fixInput').value.trim();
+        if (val.length > 0) {
+            state.score += 10;
+            state.correct++;
+            document.getElementById('scoreDisplay').textContent = state.score;
+        }
+        state.data.idx++;
+        if (state.data.idx >= state.data.items.length) finishGame();
+        else renderFixArgRound();
+    });
+    document.getElementById('skipFix').addEventListener('click', () => {
+        state.data.idx++;
+        if (state.data.idx >= state.data.items.length) finishGame();
+        else renderFixArgRound();
+    });
+}
+
+/* ==================== ОБЩЕЕ ==================== */
+function showProgress() {
+    const bar = document.getElementById('progressBar');
+    bar.style.display = 'block';
+    const pct = state.totalRounds ? (state.currentRound / state.totalRounds) * 100 : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function finishGame() {
+    if (state.timer) { clearInterval(state.timer); state.timer = null; }
+    if (state.feedbackTimeout) { clearTimeout(state.feedbackTimeout); state.feedbackTimeout = null; }
+    document.getElementById('finalScore').textContent = state.score;
+    document.getElementById('finalCorrect').textContent = state.correct;
+    document.getElementById('finalErrors').textContent = state.errors;
+
+    let rank, verdict, icon;
+    if (state.mode === 'pair') {
+        if (state.score >= 100) { rank = '🏆 Команда мечты'; icon = '🏆';
+            verdict = 'Вы отлично работаете в паре — слушаете друг друга, аргументируете, ищете истину вместе!';
+        } else if (state.score >= 50) { rank = '🤝 Хорошая пара'; icon = '🤝';
+            verdict = 'Вы неплохо справляетесь. Попробуйте чаще задавать вопросы друг другу.';
+        } else { rank = '🌱 Только начало'; icon = '🌱';
+            verdict = 'Хорошо, что попробовали! Работа в паре — это навык.';
+        }
+    } else {
+        if (state.score >= 150) { rank = '🥇 Мастер критического мышления'; icon = '🥇';
+            verdict = 'Ты отлично различаешь фейки, манипуляции и логические ловушки.';
+        } else if (state.score >= 90) { rank = '🥈 Уверенный аналитик'; icon = '🥈';
+            verdict = 'Хороший результат! Ты многое замечаешь, но иногда попадаешься на уловки.';
+        } else if (state.score >= 40) { rank = '🥉 Начинающий детектив'; icon = '🥉';
+            verdict = 'Ты учишься. Есть над чем поработать, но ты уже начал думать критически.';
+        } else { rank = '🌱 Первые шаги'; icon = '🌱';
+            verdict = 'Не расстраивайся! Критическое мышление — это навык, который развивается тренировкой.';
+        }
+    }
+    document.getElementById('resultIcon').textContent = icon;
+    document.getElementById('finalRank').textContent = rank;
+    document.getElementById('finalVerdict').textContent = verdict;
+    sWin();
+    goToPage(8);
+}
+
+document.getElementById('quitGameBtn').addEventListener('click', () => {
+    if (state.timer) { clearInterval(state.timer); state.timer = null; }
+    if (state.feedbackTimeout) { clearTimeout(state.feedbackTimeout); state.feedbackTimeout = null; }
+    goToPage(6);
+});
+document.getElementById('retryBtn').addEventListener('click', () => {
+    if (state.game) launchGame(state.game); else selectMode('solo');
+});
+document.getElementById('backToGamesBtn').addEventListener('click', () => goToPage(6));
+document.getElementById('homeBtn').addEventListener('click', () => goToPage(1));
+document.getElementById('backToGameBtn').addEventListener('click', () => goToPage(state.returnPage || 7));
+
+document.addEventListener('click', () => initAudio(), { once: true });
+document.addEventListener('touchstart', () => initAudio(), { once: true });
+
+/* ===== Слой эффектов, тем и геймификации ===== */
+(function(){
+const R=document.documentElement,cv=document.getElementById('fx'),cx=cv.getContext('2d'),rn=document.getElementById('rain'),rc=rn.getContext('2d');
+const rs=()=>{cv.width=rn.width=innerWidth;cv.height=rn.height=innerHeight};rs();addEventListener('resize',rs);
+const css=v=>getComputedStyle(R).getPropertyValue(v).trim();
+let P=[],run=false,streak=0,drops=[];
+function burst(n,x,y){const cols=[css('--a1'),css('--a2'),css('--a3'),css('--a4')];
+ for(let i=0;i<n;i++){const a=Math.random()*6.28,s=3+Math.random()*7;P.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-4,r:3+Math.random()*4,c:cols[i%4],l:70+Math.random()*40,t:Math.random()*6})}
+ if(!run){run=true;tick()}}
+function tick(){cx.clearRect(0,0,cv.width,cv.height);P=P.filter(p=>p.l-->0);
+ P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.25;p.vx*=.99;p.t+=.2;cx.save();cx.translate(p.x,p.y);cx.rotate(p.t);cx.fillStyle=p.c;cx.globalAlpha=Math.min(1,p.l/30);cx.fillRect(-p.r,-p.r/2,p.r*2,p.r);cx.restore()});
+ P.length?requestAnimationFrame(tick):run=false}
+function matrix(){if(R.dataset.theme!=='hack')return;const w=16;if(!drops.length)drops=Array(Math.ceil(innerWidth/w)).fill(0).map(()=>Math.random()*50);
+ rc.fillStyle='rgba(1,8,5,.12)';rc.fillRect(0,0,rn.width,rn.height);rc.fillStyle='#00ff9c';rc.font='14px monospace';
+ drops.forEach((y,i)=>{rc.fillText('01ФАКТЛОЖЬ'[Math.random()*10|0],i*w,y*w);drops[i]=y*w>rn.height&&Math.random()>.97?0:y+1})}
+R.dataset.theme='pop';
+function count(){document.querySelectorAll('#page3 [data-n]').forEach(el=>{const t=+el.dataset.n,d=+(el.dataset.d||0),s=el.dataset.suf||'',t0=performance.now();
+ (function f(now){const k=Math.min(1,(now-t0)/1300),e=1-Math.pow(1-k,3);el.textContent=(t*e).toFixed(d).replace('.',',')+s;if(k<1)requestAnimationFrame(f)})(t0)})}
+const tt=document.getElementById('toast');let tm;
+function toast(s){tt.textContent=s;tt.classList.add('on');clearTimeout(tm);tm=setTimeout(()=>tt.classList.remove('on'),1100)}
+const _go=goToPage;
+window.goToPage=function(n){_go(n);const pg=document.getElementById('page'+n);if(pg)[...pg.children].forEach((c,i)=>c.style.setProperty('--i',i));
+ const ti=[2,3,4,11,12,13].indexOf(n);document.querySelectorAll('#steps i').forEach((d,i)=>d.className=i<=ti?'on':'');document.getElementById('steps').style.visibility=ti>=0?'visible':'hidden';
+ if(n===3)count();if(n===8){streak=0;setTimeout(()=>burst(180,innerWidth/2,innerHeight/3),150)}};
+let lx=innerWidth/2,ly=innerHeight/2;document.addEventListener('pointerdown',e=>{lx=e.clientX;ly=e.clientY},true);
+const _sc=sCorrect;window.sCorrect=function(){_sc();streak++;burst(26,lx,ly);if(streak>=2)toast('🔥 КОМБО x'+streak)};
+const _sw=sWrong;window.sWrong=function(){_sw();streak=0;const a=document.getElementById('app');a.classList.remove('hit');void a.offsetWidth;a.classList.add('hit')};
+window._fx={burst,toast};goToPage(1);
+})();
+
+/* ===== Финал: карточка, достижения, памятка, клавиши ===== */
+(function(){
+const $=id=>document.getElementById(id);let S={done:[],ach:[]};try{S=JSON.parse(localStorage.getItem('qz'))||S}catch(e){}
+const save=()=>{try{localStorage.setItem('qz',JSON.stringify(S))}catch(e){}};
+const AC={first:['🎮','Первый шаг','Пройди любую игру'],sniper:['🎯','Снайпер','Игра без ошибок'],fire:['🔥','На огне','Комбо x5'],speed:['⚡','Скорострел','Все 15 в гонке до конца таймера'],master:['🧠','Мастер','150+ очков за игру'],all:['🏆','Коллекционер','Пройди все 8 соло-игр']};
+let cs=0,ms=0;const _s=sCorrect;window.sCorrect=function(){_s();cs++;ms=Math.max(ms,cs)};const _w=sWrong;window.sWrong=function(){_w();cs=0};
+const box=document.createElement('div');box.innerHTML='<div class="xp"><div class="xp-top"><span id="accTxt"></span><span id="stars"></span></div><div class="progress-bar" style="max-width:none"><div class="progress-fill" id="xpFill" style="width:0"></div></div></div><input class="text-input" id="plName" placeholder="Твоё имя для карточки" maxlength="18" style="margin-bottom:12px;text-align:center"><button class="btn full" id="dlCard" style="margin-bottom:10px">💾 Скачать карточку игрока</button><button class="btn full" id="toMemo" style="margin-bottom:10px;background:var(--a4)">📋 Памятка и достижения</button>';
+$('retryBtn').before(...box.children);
+$('toMemo').onclick=()=>goToPage(10);
+const pb=document.querySelector('#page6 .nav-buttons');const mb=document.createElement('button');mb.className='btn';mb.textContent='📋 Памятка';mb.onclick=()=>goToPage(10);pb.append(mb);
+function award(k,fresh){if(!S.ach.includes(k)){S.ach.push(k);fresh.push(k)}}
+function onFinish(){const tot=state.correct+state.errors,acc=tot?Math.round(state.correct/tot*100):null;
+ if(state.game&&!S.done.includes(state.game))S.done.push(state.game);
+ const fresh=[];award('first',fresh);if(state.errors===0&&state.correct>0)award('sniper',fresh);if(ms>=5)award('fire',fresh);
+ if(state.game==='race'&&state.data.timeLeft>0)award('speed',fresh);if(state.score>=150)award('master',fresh);
+ if(SOLO_GAMES.every(g=>S.done.includes(g.id)))award('all',fresh);save();
+ const st=acc==null?(state.score>=100?3:state.score>=50?2:1):acc>=90?3:acc>=70?2:1,lv=Math.floor(state.score/50)+1;
+ $('accTxt').textContent=(acc==null?'':'Точность '+acc+'% · ')+'Уровень '+lv;$('stars').textContent='⭐'.repeat(st)+'☆'.repeat(3-st);
+ const f=$('xpFill');f.style.width='0';setTimeout(()=>f.style.width=(state.score%50)/50*100+'%',300);
+ fresh.forEach((k,i)=>setTimeout(()=>_fx.toast('🏅 '+AC[k][1]+'!'),1200+i*1400));ms=0;cs=0;return{acc,st}}
+let last={};
+function decorate(){document.querySelectorAll('#gameGrid .done,.chip').forEach(e=>e.remove());
+ const L=state.mode==='pair'?PAIR_GAMES:SOLO_GAMES;[...document.querySelectorAll('#gameGrid .game-card')].forEach((c,i)=>{if(S.done.includes(L[i].id))c.insertAdjacentHTML('beforeend','<span class="done">✓</span>')});
+ $('modeLabel').insertAdjacentHTML('beforeend','<span class="chip">'+L.filter(g=>S.done.includes(g.id)).length+' / '+L.length+'</span>')}
+function memo(){const g=$('achGrid');g.innerHTML=Object.entries(AC).map(([k,v])=>`<div class="${S.ach.includes(k)?'':'lock'}"><i>${v[0]}</i><b>${v[1]}</b>${v[2]}</div>`).join('')}
+document.querySelectorAll('.memo-step').forEach(s=>s.onclick=()=>{s.classList.toggle('on');sClick();const all=document.querySelectorAll('.memo-step.on').length===5;if(all){const r=s.getBoundingClientRect();_fx.burst(120,r.x+r.width/2,r.y);_fx.toast('🛡️ ИММУНИТЕТ ВКЛЮЧЁН!');sWin()}});
+const _g=goToPage;window.goToPage=function(n){_g(n);if(n===7)cs=ms=0;if(n===6)decorate();if(n===8)last=onFinish();if(n===10){memo();document.querySelectorAll('.memo-step').forEach(s=>s.classList.remove('on'))}};
+$('dlCard').onclick=async()=>{try{await document.fonts.ready}catch(e){}
+ const nm=($('plName').value.trim()||'Игрок').slice(0,18),W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+ const T=(s,px,y,col='#111',w=900)=>{do{x.font=w+' '+px+'px Unbounded,Rubik,sans-serif';px-=2}while(x.measureText(s).width>800&&px>14);x.fillStyle=col;x.textAlign='center';x.fillText(s,W/2,y)};
+ x.fillStyle='#ffe45e';x.fillRect(0,0,W,H);x.fillStyle='rgba(17,17,17,.22)';for(let i=0;i<W;i+=40)for(let j=0;j<H;j+=40){x.beginPath();x.arc(i,j,3,0,7);x.fill()}
+ x.fillStyle='#111';x.fillRect(110,150,880,1060);x.fillStyle='#fffaf0';x.fillRect(80,120,880,1060);x.strokeStyle='#111';x.lineWidth=8;x.strokeRect(80,120,880,1060);
+ x.fillStyle='#ff4fa3';x.fillRect(80,120,880,150);x.strokeRect(80,120,880,150);T('ПРЕЖДЕ ЧЕМ ПОВЕРИТЬ',46,210,'#fff');
+ T('ИГРОК',30,360,'#4a4a4a',800);T(nm.toUpperCase(),80,450);T($('finalRank').textContent,46,540,'#111',800);
+ T(String(state.score),260,780,'#3d5afe');T('ОЧКОВ',40,850,'#4a4a4a',800);T('⭐'.repeat(last.st||1),90,970);
+ T(last.acc==null?'Верных: '+state.correct:'Точность: '+last.acc+'%',44,1050,'#111',800);T('Ошибок: '+state.errors+'  •  '+new Date().toLocaleDateString('ru-RU'),32,1115,'#4a4a4a',800);
+ c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='karta-igroka.png';a.click()});_fx.toast('💾 Сохранено!')};
+const sd=$('scoreDisplay');let pv=0;new MutationObserver(()=>{const v=+sd.textContent||0,d=v-pv;pv=v;if(d>0){sd.classList.remove('bump');void sd.offsetWidth;sd.classList.add('bump');const r=sd.getBoundingClientRect(),p=document.createElement('div');p.className='plus';p.textContent='+'+d;p.style.left=r.x+'px';p.style.top=r.y-6+'px';document.body.append(p);setTimeout(()=>p.remove(),1000)}}).observe(sd,{childList:true,characterData:true,subtree:true});
+addEventListener('keydown',e=>{if(!$('page7').classList.contains('active')||/INPUT|TEXTAREA/.test(document.activeElement.tagName))return;
+ if(e.key>='1'&&e.key<='4'){const b=document.querySelectorAll('#gameContent .answer-btn')[e.key-1];if(b&&!b.disabled)b.click()}
+ else if(e.key==='Enter'){const b=[...document.querySelectorAll('#gameContent .btn.primary')].find(x=>x.offsetParent);if(b)b.click()}});
+})();
+
+/* ===== Панель ведущего, модалки, таймер раунда ===== */
+(function(){
+const $=id=>document.getElementById(id),LS=window.localStorage;
+const get=(k,d)=>{try{const v=JSON.parse(LS.getItem(k));return v==null?d:v}catch(e){return d}},set=(k,v)=>{try{LS.setItem(k,JSON.stringify(v))}catch(e){}};
+const nb=document.createElement('button');nb.className='btn primary full';nb.id='nextGameBtn';nb.style.marginBottom='10px';$('retryBtn').before(nb);$('retryBtn').classList.remove('primary');
+const nextOf=()=>{const L=state.mode==='pair'?PAIR_GAMES:SOLO_GAMES,i=L.findIndex(g=>g.id===state.game);return L[i+1]};
+nb.onclick=()=>{const n=nextOf();sClick();n?launchGame(n.id):goToPage(10)};
+const _g2=goToPage;window.goToPage=function(n){_g2(n);
+ if(n===8){const x=nextOf();nb.textContent=x?'➡️ Следующая игра: '+x.title:'🏁 Финал: памятка и достижения'}};
+})();
+</script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id),C=window.QUIZ_CONFIG||{};
+const ls=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2);
+const genCode=()=>Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');
+/* ===== QR (byte mode, EC L, версии 1–6) ===== */
+function qr(text){const d=[...new TextEncoder().encode(text)],T=[[26,7,1,19],[44,10,1,34],[70,15,1,55],[100,20,1,80],[134,26,1,108],[172,18,2,68]];
+ const v=T.findIndex(t=>t[2]*t[3]>=d.length+2);if(v<0)return null;const[,ecn,nb,dpb]=T[v],nd=nb*dpb,V=v+1,n=17+4*V;
+ let bits=[];const put=(x,k)=>{for(let i=k-1;i>=0;i--)bits.push(x>>i&1)};put(4,4);put(d.length,8);d.forEach(b=>put(b,8));put(0,Math.min(4,nd*8-bits.length));while(bits.length%8)bits.push(0);
+ const cw=[];for(let i=0;i<bits.length;i+=8)cw.push(parseInt(bits.slice(i,i+8).join(''),2));for(let p=0xEC;cw.length<nd;p=p==0xEC?0x11:0xEC)cw.push(p);
+ const E=[],Lg=[];let x=1;for(let i=0;i<255;i++){E[i]=x;Lg[x]=i;x<<=1;if(x>255)x^=0x11D}const mul=(a,b)=>a&&b?E[(Lg[a]+Lg[b])%255]:0;
+ let g=[1];for(let i=0;i<ecn;i++){const t=Array(g.length+1).fill(0);g.forEach((c,j)=>{t[j]^=c;t[j+1]^=mul(c,E[i])});g=t}
+ const rs=a=>{const r=Array(ecn).fill(0);a.forEach(b=>{const f=b^r.shift();r.push(0);if(f)g.slice(1).forEach((c,j)=>r[j]^=mul(c,f))});return r};
+ const B=[],K=[];for(let i=0;i<nb;i++){const b=cw.slice(i*dpb,(i+1)*dpb);B.push(b);K.push(rs(b))}
+ const out=[];for(let i=0;i<dpb;i++)B.forEach(b=>out.push(b[i]));for(let i=0;i<ecn;i++)K.forEach(c=>out.push(c[i]));
+ const M=Array.from({length:n},()=>Array(n).fill(false)),F=Array.from({length:n},()=>Array(n).fill(false));
+ const set=(r,c,val)=>{if(r>=0&&c>=0&&r<n&&c<n){M[r][c]=val;F[r][c]=true}};
+ [[0,0],[0,n-7],[n-7,0]].forEach(([R,Cc])=>{for(let a=-1;a<=7;a++)for(let b=-1;b<=7;b++)set(R+a,Cc+b,a>=0&&a<=6&&b>=0&&b<=6&&(a==0||a==6||b==0||b==6||(a>=2&&a<=4&&b>=2&&b<=4)))});
+ for(let i=8;i<n-8;i++){set(6,i,i%2==0);set(i,6,i%2==0)}
+ if(V>1){const a=4*V+10;for(let r=-2;r<=2;r++)for(let c=-2;c<=2;c++)set(a+r,a+c,Math.max(Math.abs(r),Math.abs(c))!=1)}
+ for(let i=0;i<9;i++){F[8][i]=F[i][8]=true}for(let i=0;i<8;i++){F[8][n-1-i]=F[n-1-i][8]=true}
+ let k=0;const db=[];out.forEach(b=>{for(let i=7;i>=0;i--)db.push(b>>i&1)});
+ for(let rt=n-1;rt>=1;rt-=2){if(rt==6)rt=5;for(let vt=0;vt<n;vt++)for(let j=0;j<2;j++){const c=rt-j,r=((rt+1)&2)==0?n-1-vt:vt;if(!F[r][c]&&k<db.length)M[r][c]=!!db[k++]}}
+ const mk=[(x,y)=>(x+y)%2==0,(x,y)=>y%2==0,(x,y)=>x%3==0,(x,y)=>(x+y)%3==0,(x,y)=>(Math.floor(x/3)+Math.floor(y/2))%2==0,(x,y)=>x*y%2+x*y%3==0,(x,y)=>(x*y%2+x*y%3)%2==0,(x,y)=>((x+y)%2+x*y%3)%2==0];
+ let best=null,bp=1e9;
+ for(let m=0;m<8;m++){const Q=M.map(r=>r.slice());for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(!F[r][c]&&mk[m](c,r))Q[r][c]=!Q[r][c];
+  let dt=(1<<3|m),rm=dt;for(let i=0;i<10;i++)rm=(rm<<1)^((rm>>9)*0x537);const fb=(dt<<10|rm)^0x5412,bt=i=>!!(fb>>i&1);
+  const s2=(r,c,val)=>{Q[r][c]=val};
+  for(let i=0;i<=5;i++)s2(i,8,bt(i));s2(7,8,bt(6));s2(8,8,bt(7));s2(8,7,bt(8));for(let i=9;i<15;i++)s2(8,14-i,bt(i));
+  for(let i=0;i<8;i++)s2(8,n-1-i,bt(i));for(let i=8;i<15;i++)s2(n-15+i,8,bt(i));s2(n-8,8,true);
+  let p=0,dark=0;for(let a=0;a<n;a++){let rr=1,cc=1;for(let b=0;b<n;b++){if(Q[a][b])dark++;if(b){if(Q[a][b]==Q[a][b-1]){if(++rr==5)p+=3;else if(rr>5)p++}else rr=1;if(Q[b][a]==Q[b-1][a]){if(++cc==5)p+=3;else if(cc>5)p++}else cc=1}}}
+  p+=Math.floor(Math.abs(dark*20-n*n*10)/(n*n))*10;if(p<bp){bp=p;best=Q}}
+ return best}
+function qrSvg(t){const m=qr(t);if(!m)return'';const n=m.length;let p='';m.forEach((r,y)=>r.forEach((c,x)=>{if(c)p+='M'+(x+4)+' '+(y+4)+'h1v1h-1z'}));return'<svg viewBox="0 0 '+(n+8)+' '+(n+8)+'" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="'+p+'" fill="#111"/></svg>'}
+
+/* ===== Сеть: Supabase, если ключи заданы, иначе локально (между вкладками) ===== */
+let sb=null;if(C.SUPABASE_URL&&C.SUPABASE_ANON_KEY&&window.supabase)try{sb=window.supabase.createClient(C.SUPABASE_URL,C.SUPABASE_ANON_KEY)}catch(e){}
+const bc='BroadcastChannel' in window?new BroadcastChannel('qz'):null,subs=[],emit=c=>subs.forEach(f=>f(c));
+if(bc)bc.onmessage=e=>emit(e.data);addEventListener('storage',e=>{if(e.key&&e.key.startsWith('qzR_'))emit(e.key.slice(4))});
+const rd=c=>ls('qzR_'+c,null),wr=(c,o)=>{sv('qzR_'+c,o);bc&&bc.postMessage(c);emit(c)};
+const sortP=a=>a.sort((x,y)=>y.score-x.score||x.t-y.t);
+const Net={
+ async create(){const code=genCode();if(sb){const{error}=await sb.from('rooms').insert({code,status:'lobby'});if(error)throw error}else wr(code,{status:'lobby',players:{}});return code},
+ async get(c){if(sb){const[a,b]=await Promise.all([sb.from('rooms').select('status').eq('code',c).maybeSingle(),sb.from('players').select('player_id,name,score,joined_at').eq('room',c)]);return{status:a.data?a.data.status:'gone',players:sortP((b.data||[]).map(p=>({id:p.player_id,name:p.name,score:p.score,t:Date.parse(p.joined_at)})))}}
+  const r=rd(c);return r?{status:r.status,players:sortP(Object.entries(r.players).map(([id,p])=>({id,...p})))}:{status:'gone',players:[]}},
+ async join(c,p){const cur=await this.get(c);if(cur.status=='gone')throw 0;let n=p.name,k=2;while(cur.players.some(x=>x.id!==p.id&&x.name.toLowerCase()==n.toLowerCase()))n=p.name+' '+k++;
+  if(sb)await sb.from('players').upsert({room:c,player_id:p.id,name:n,score:p.score||0},{onConflict:'room,player_id'});else{const r=rd(c);r.players[p.id]={name:n,score:p.score||0,t:(r.players[p.id]||{t:Date.now()}).t};wr(c,r)}return n},
+ async status(c,s){if(sb)await sb.from('rooms').update({status:s}).eq('code',c);else{const r=rd(c);r.status=s;wr(c,r)}},
+ async score(c,id,s){if(sb)await sb.from('players').update({score:s}).eq('room',c).eq('player_id',id);else{const r=rd(c);if(r&&r.players[id]){r.players[id].score=s;wr(c,r)}}},
+ async kick(c,id){if(sb)await sb.from('players').delete().eq('room',c).eq('player_id',id);else{const r=rd(c);delete r.players[id];wr(c,r)}},
+ watch(c,cb){let t,ch,iv;const run=()=>{clearTimeout(t);t=setTimeout(async()=>cb(await Net.get(c)),60)};subs.push(m=>m==c&&run());
+  if(sb){ch=sb.channel('r-'+c).on('postgres_changes',{event:'*',schema:'public',table:'players',filter:'room=eq.'+c},run).on('postgres_changes',{event:'*',schema:'public',table:'rooms',filter:'code=eq.'+c},run).subscribe();iv=setInterval(run,8000)}run();return()=>{clearTimeout(t);cb=()=>{};ch&&sb.removeChannel(ch);iv&&clearInterval(iv)}}}; // возвращает функцию отписки
+window._qz={Net,get sb(){return sb},esc,get rows(){return rows}};
+const link=c=>location.href.split('?')[0].split('#')[0]+'?r='+c;
+
+/* ===== Оформление ===== */
+document.head.insertAdjacentHTML('beforeend',`<style>
+.ov{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;background:var(--bg) radial-gradient(#11111140 2px,transparent 2px) 0 0/24px 24px;overflow:auto;text-align:center}.ov.on{display:flex}
+.ov .text-input{max-width:340px;width:100%;text-align:center;font-size:1.2rem;padding:14px}.ov .big-code{display:inline-block;font:900 clamp(2.4rem,9vw,5rem) var(--fd);letter-spacing:.2em;padding:.1em .4em;background:#fff;border:3px solid #111;border-radius:16px;box-shadow:6px 6px 0 #111}
+#host{justify-content:flex-start;padding:22px 3vw}.hs-top{display:flex;width:100%;justify-content:space-between;align-items:center;font:800 1.1rem var(--fd)}
+.hs-main{display:grid;grid-template-columns:minmax(260px,420px) 1fr;gap:3vw;width:100%;flex:1;align-items:start;text-align:left}
+.hs-qr{max-width:min(340px,38vh)!important;background:#fff;border:3px solid #111;border-radius:20px;box-shadow:8px 8px 0 #111;padding:10px;max-width:420px}.hs-qr svg{display:block;width:100%}
+.hs-link{font:700 .95rem var(--fb);word-break:break-all;color:var(--mu);margin:8px 0}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 20px}.chip{display:flex;gap:8px;align-items:center;padding:8px 14px;background:#fff;border:3px solid #111;border-radius:50px;box-shadow:3px 3px 0 #111;font-weight:800}.chip.new{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}.chip button{border:0;background:none;cursor:pointer;opacity:.4;font-size:1rem}.chip button:hover{opacity:1}
+@keyframes pop{from{transform:scale(0) rotate(-8deg)}}
+.lb-row{position:relative;display:flex;align-items:center;gap:12px;padding:10px 16px;margin-bottom:8px;background:#fff;border:3px solid #111;border-radius:14px;box-shadow:3px 3px 0 #111;font-weight:800;overflow:hidden;text-align:left}
+.lb-row .bar{position:absolute;inset:0 auto 0 0;background:var(--a3);opacity:.35;transition:width .6s;z-index:0}.lb-row>*{position:relative;z-index:1}.lb-row.me{background:var(--a4)}.lb-row.up{animation:lbup 1s}@keyframes lbup{0%{background:var(--a3);transform:scale(1.03)}}
+.lb-row b{min-width:40px}.lb-row span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lb-row i{font-style:normal;color:var(--a2)}.lb-row em{font-style:normal;font-size:.8rem}.up-a{color:var(--ok)}.dn-a{color:var(--no)}
+#hsBoard{width:100%;max-width:900px}#hsBoard .lb-row{font-size:clamp(1rem,1.8vw,1.5rem)}
+.pod{display:flex;align-items:flex-end;justify-content:center;gap:12px;margin:10px 0 20px}.pd{display:flex;flex-direction:column;align-items:center;width:clamp(90px,22vw,200px);font-weight:800;animation:rise .8s both}.pd .blk{width:100%;background:var(--a1);border:3px solid #111;border-radius:12px 12px 0 0;display:flex;align-items:flex-start;justify-content:center;font:900 2rem var(--fd);color:#fff;padding-top:6px}
+.p1 .blk{height:190px;background:var(--a4);color:#111}.p2 .blk{height:140px}.p3 .blk{height:100px;background:var(--a3)}.pd b{font-size:1.1rem;word-break:break-word}
+#lbPill{position:fixed;left:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:80;font:800 .9rem var(--fb);padding:10px 16px;border-radius:50px;background:var(--a2);color:#fff;border:3px solid #111;box-shadow:4px 4px 0 #111;cursor:pointer;display:none}#lbPill.bump{animation:bump .5s}@keyframes bump{40%{transform:scale(1.18) rotate(-3deg)}}
+.sort-card{touch-action:none;user-select:none;cursor:grab}.sort-bin.hov{transform:scale(1.08) rotate(-2deg);background:var(--a4)!important}
+html,body{height:100%}body{padding:0!important}#app{width:100vw!important;height:100svh!important;max-width:none!important;max-height:none!important;border-radius:0!important;border-width:0!important;padding:0!important;box-shadow:none!important;background:transparent!important;backdrop-filter:none!important}
+.container{max-width:1180px;margin:0 auto;padding:52px 32px 90px!important;overflow-x:hidden}.ptools{display:none!important}
+@media(max-width:760px){.hs-main{grid-template-columns:1fr}.container{padding:56px 14px 90px!important}.title.big{font-size:2.4rem}.title{font-size:1.5rem}
+ .answer-grid,.answer-grid.two,.answer-grid.four,.mode-grid,.game-grid,.signs-grid,.stats-row{grid-template-columns:1fr!important}.features-grid{grid-template-columns:1fr 1fr!important}
+ .answer-btn{padding:15px;font-size:1rem;min-height:52px}.btn{min-height:46px}.game-header{font-size:.9rem;gap:6px}.sort-bins{display:grid!important;grid-template-columns:repeat(3,1fr);gap:8px}.sort-bin{min-height:70px;font-size:.85rem;padding:8px}.stks{display:none}.ticker{display:none}.nav-buttons{flex-wrap:wrap;gap:10px}.nav-buttons .btn{flex:1 1 100%}}
+</style>`);
+document.body.insertAdjacentHTML('beforeend',`<button id="lbPill"></button>
+<div class="ov" id="ovJoin"><div class="title"><span>Вход в игру</span></div><input class="text-input" id="jCode" placeholder="Код комнаты" maxlength="4" style="text-transform:uppercase;letter-spacing:.3em"><input class="text-input" id="jName" placeholder="Твоё имя" maxlength="18"><div id="jErr" class="subtitle" style="color:var(--no);margin:0"></div><button class="btn primary big" id="jGo">Войти →</button><button class="btn secondary" id="jBack">← Назад</button></div>
+<div class="ov" id="ovWait"><div class="hero-icon-small">⏳</div><div class="title" id="wTitle"></div><div class="subtitle" id="wSub">Ждём, пока учитель начнёт игру…</div><div class="chips" id="wChips" style="justify-content:center"></div></div>
+<div class="ov" id="ovEnd"><div class="hero-icon-small">🏁</div><div class="title"><span>Игра окончена</span></div><div class="big-score" id="eRank"></div><div class="pod" id="ePod"></div><button class="btn primary" id="eClose">Закрыть</button></div>
+<div class="ov" id="host"></div>
+<div class="modal" id="mBoard"><div class="modal-box"><button class="btn secondary mclose">✕</button><div class="title" style="font-size:1.3rem">🏆 <span>Рейтинг</span></div><div id="mList"></div></div></div>`);
+$('mBoard').onclick=e=>{if(e.target.id=='mBoard'||e.target.classList.contains('mclose'))$('mBoard').classList.remove('on')};
+const rows=(a,meId,prev)=>{const mx=Math.max(1,...a.map(p=>p.score)),med=['🥇','🥈','🥉'];return a.map((p,i)=>{const o=prev&&prev[p.id],ar=o==null?'':o>i?'<em class="up-a">▲</em>':o<i?'<em class="dn-a">▼</em>':'';return'<div class="lb-row'+(p.id==meId?' me':'')+(prev&&o!=null&&p.score>(prev.s||{})[p.id]?' up':'')+'"><div class="bar" style="width:'+p.score/mx*100+'%"></div><b>'+(med[i]||i+1)+'</b><span>'+esc(p.name)+'</span>'+ar+'<i>'+p.score+'</i></div>'}).join('')};
+const podium=a=>[1,0,2].map(i=>a[i]?'<div class="pd p'+(i+1)+'"><b>'+esc(a[i].name)+'</b><span>'+a[i].score+'</span><div class="blk">'+(i+1)+'</div></div>':'').join('');
+const snap=a=>{const o={s:{}};a.forEach((p,i)=>{o[p.id]=i;o.s[p.id]=p.score});return o};
+
+/* ===== Ведущий ===== */
+let hostCode=ls('qzHost',null),seen=new Set(),hPrev=null;
+async function startHost(mode){mode=mode=='presenting'?mode:'quiz';try{hostCode=await Net.create();sv('qzHost',hostCode);sv('qzHostMode',mode);if(mode=='presenting')await Pres.init(hostCode)}catch(e){alert('Не удалось создать комнату: '+(e.message||e));return}openHost()}
+function openHost(){seen=new Set();$('host').classList.add('on');Net.watch(hostCode,drawHost);try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(e){}}
+function drawHost(d){const h=$('host'),L=link(hostCode);
+ if(d.status=='gone'){hostCode=null;sv('qzHost',null);h.classList.remove('on');return}
+ if(d.status=='presenting'&&window.Pres){Pres.host(d,hostCode);return}
+ const top='<div class="hs-top"><span>🕵️ НЕ ВЕДИСЬ НА ФЕЙКИ</span><span><button class="btn secondary" id="hFs">⛶ На весь экран</button> <button class="btn secondary" id="hExit">Закрыть комнату</button></span></div>';
+ if(d.status=='lobby'){
+  h.innerHTML=top+'<div class="hs-main"><div><div class="subtitle" style="margin:0 0 8px">Наведи камеру на QR или открой ссылку</div><div class="hs-qr">'+(qrSvg(L)||'<div class="subtitle">Ссылка слишком длинная для QR</div>')+'</div><div class="hs-link">'+esc(L)+'</div><button class="btn" id="hCopy">📋 Скопировать ссылку</button><div class="subtitle" style="margin:14px 0 4px">Код комнаты</div><div class="big-code">'+hostCode+'</div></div>'+
+  '<div><div class="title" style="text-align:left;margin:0">Игроков: <span>'+d.players.length+'</span></div><div class="chips">'+(d.players.map(p=>{const nw=!seen.has(p.id);seen.add(p.id);return'<div class="chip'+(nw?' new':'')+'">'+esc(p.name)+'<button data-k="'+p.id+'" title="Убрать">✕</button></div>'}).join('')||'<div class="subtitle">Пока никого — ждём игроков…</div>')+'</div><button class="btn primary big" id="hStart"'+(d.players.length?'':' disabled')+'>▶ Начать игру</button></div></div>';
+ }else if(d.status=='playing'){
+  h.innerHTML=top+'<div class="title" style="margin:6px 0">🏆 <span>Рейтинг</span></div><div id="hsBoard">'+rows(d.players.slice(0,10),null,hPrev)+'</div><div style="display:flex;gap:10px;margin-top:10px"><button class="btn primary" id="hEnd">🏁 Завершить и показать итоги</button></div><div class="subtitle" style="margin:0">Игроков: '+d.players.length+' · код <b>'+hostCode+'</b></div>';
+ }else{
+  h.innerHTML=top+'<div class="title"><span>Итоги</span></div><div class="pod">'+podium(d.players)+'</div><div id="hsBoard">'+rows(d.players.slice(3,10).length?d.players.slice(0,10):[],null,null)+'</div><button class="btn primary" id="hNew">🔄 Новая игра</button>';
+  if(!h.dataset.fx){h.dataset.fx=1;setTimeout(()=>_fx.burst(200,innerWidth/2,innerHeight/3),400)}}
+ hPrev=snap(d.players);
+ const q=id=>h.querySelector('#'+id);
+ q('hFs').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});
+ q('hExit').onclick=()=>{if(confirm('Закрыть комнату? Игроки будут отключены.')){hostCode=null;sv('qzHost',null);h.classList.remove('on');h.dataset.fx=''}};
+ const s=q('hStart');if(s)s.onclick=()=>Net.status(hostCode,ls('qzHostMode')=='presenting'?'presenting':'playing');const e=q('hEnd');if(e)e.onclick=()=>Net.status(hostCode,'ended');
+ const nw=q('hNew');if(nw)nw.onclick=()=>{h.dataset.fx='';hostCode=null;startHost(ls('qzHostMode'))};
+ const cp=q('hCopy');if(cp)cp.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(L);cp.textContent='✅ Скопировано'};
+ h.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>Net.kick(hostCode,b.dataset.k))}
+
+/* ===== Игрок ===== */
+let ses=ls('qzSes',null),best={},started=false,pd=[],W=null;
+const pill=$('lbPill');
+async function doJoin(code,name){const id=ses&&ses.code==code?ses.id:uid();
+ try{name=await Net.join(code,{id,name,score:0})}catch(e){return false}
+ if(!ses||ses.code!=code)best={};else best=ls('qzBest_'+code,{});
+ ses={code,id,name};sv('qzSes',ses);started=false;W=Net.watch(code,onState);$('ovJoin').classList.remove('on');return true}
+function onState(d){if(!ses)return;pd=d.players;const k=d.players.findIndex(p=>p.id==ses.id);
+ if(d.status=='gone'||k<0){if(d.status!='lobby'||true){leave(k<0&&d.status!='gone'?'Тебя убрали из комнаты':'Комната закрыта')}return}
+ if(d.status=='presenting'&&window.Pres){$('ovWait').classList.remove('on');pill.style.display='none';if(W){W();W=null} // в уроке подписка на players не нужна
+  Pres.student(ses);return}
+ pill.style.display='block';pill.textContent='🏆 #'+(k+1)+' из '+d.players.length+' · '+d.players[k].score;
+ if($('mBoard').classList.contains('on'))$('mList').innerHTML=rows(d.players.slice(0,10),ses.id);
+ if(d.status=='lobby'){$('wTitle').textContent='Привет, '+ses.name+'!';$('wChips').innerHTML=d.players.map(p=>'<div class="chip">'+esc(p.name)+'</div>').join('');$('ovWait').classList.add('on');$('ovEnd').classList.remove('on');started=false}
+ if(d.status=='playing'){$('ovWait').classList.remove('on');if(!started){started=true;goToPage(2)}}
+ if(d.status=='ended'){$('ovWait').classList.remove('on');$('eRank').textContent='Ты на '+(k+1)+' месте — '+d.players[k].score+' очков';$('ePod').innerHTML=podium(d.players);if(!$('ovEnd').classList.contains('on')){$('ovEnd').classList.add('on');setTimeout(()=>_fx.burst(160,innerWidth/2,innerHeight/3),300)}}}
+function leave(msg){ses=null;sv('qzSes',null);pill.style.display='none';$('ovWait').classList.remove('on');$('ovEnd').classList.remove('on');goToPage(1);alert(msg)}
+pill.onclick=()=>{$('mList').innerHTML=rows(pd.slice(0,10),ses&&ses.id);$('mBoard').classList.add('on')};
+$('eClose').onclick=()=>{$('ovEnd').classList.remove('on')};
+const openJoin=code=>{$('jCode').value=code||'';$('jCode').readOnly=!!code;$('jErr').textContent='';$('ovJoin').classList.add('on');setTimeout(()=>$('jName').focus(),50)};
+$('jBack').onclick=()=>$('ovJoin').classList.remove('on');
+$('jGo').onclick=async()=>{const c=$('jCode').value.trim().toUpperCase(),n=$('jName').value.trim();if(c.length<4)return $('jErr').textContent='Введи код из 4 букв';if(!n)return $('jErr').textContent='Введи своё имя';
+ $('jGo').disabled=true;const ok=await doJoin(c,n);$('jGo').disabled=false;if(!ok)$('jErr').textContent='Комната не найдена. Проверь код.'};
+['jCode','jName'].forEach(i=>$(i).addEventListener('keydown',e=>{if(e.key=='Enter')$('jGo').click()}));
+$('btnJoin').onclick=()=>openJoin();$('btnHost').onclick=()=>window.Pres?Pres.pick(startHost):startHost();$('btnSolo').onclick=()=>goToPage(2);
+
+/* ===== Очки → в рейтинг сразу после каждого ответа ===== */
+const sd=$('scoreDisplay');
+new MutationObserver(()=>{if(!ses)return;const g=state.game,v=+sd.textContent||0;if(!g||v<=(best[g]||0))return;best[g]=v;sv('qzBest_'+ses.code,best);Net.score(ses.code,ses.id,Object.values(best).reduce((a,b)=>a+b,0))}).observe(sd,{childList:true,characterData:true,subtree:true});
+const _c=window.sCorrect;window.sCorrect=function(){_c();navigator.vibrate&&navigator.vibrate(35)};
+const _w=window.sWrong;window.sWrong=function(){_w();navigator.vibrate&&navigator.vibrate([60,40,60])};
+
+/* ===== Сортировка перетаскиванием ===== */
+const gc=$('gameContent');
+new MutationObserver(()=>{if(state.game!='sort')return;const c=gc.querySelector('.sort-card');if(!c||c.dataset.d)return;c.dataset.d=1;let sx,sy,on=0,hv=null;
+ const q=gc.querySelector('.game-question');if(q)q.textContent='Перетащи карточку в нужную корзину 👇';
+ const at=e=>{c.style.pointerEvents='none';const el=document.elementFromPoint(e.clientX,e.clientY);c.style.pointerEvents='';return el&&el.closest('.sort-bin')};
+ c.onpointerdown=e=>{on=1;sx=e.clientX;sy=e.clientY;c.setPointerCapture(e.pointerId);c.style.transition='none';c.style.position='relative';c.style.zIndex=9};
+ c.onpointermove=e=>{if(!on)return;c.style.transform='translate('+(e.clientX-sx)+'px,'+(e.clientY-sy)+'px) rotate('+(e.clientX-sx)/30+'deg)';const b=at(e);if(b!==hv){hv&&hv.classList.remove('hov');hv=b;b&&b.classList.add('hov')}};
+ c.onpointerup=e=>{if(!on)return;on=0;const b=at(e);hv&&hv.classList.remove('hov');c.style.transition='transform .3s';c.style.transform='';if(b)b.click()}}).observe(gc,{childList:true});
+
+/* ===== Старт: ссылка с кодом, возврат в комнату после перезагрузки ===== */
+const qc=(new URLSearchParams(location.search).get('r')||'').toUpperCase();
+if(qc)openJoin(qc.slice(0,4));
+else if(ses)Net.get(ses.code).then(d=>{if(d.status!='gone'&&d.players.some(p=>p.id==ses.id)){best=ls('qzBest_'+ses.code,{});W=Net.watch(ses.code,onState)}else{ses=null;sv('qzSes',null)}});
+else if(hostCode)Net.get(hostCode).then(d=>d.status!='gone'?openHost():(hostCode=null));
+})();
+
+</script>
+<script>
+/* ===== РЕЖИМ ПРЕЗЕНТАЦИИ (как UniSlide) =====
+   Учитель пишет в room_state, ученики слушают. Очки считает ТОЛЬКО клиент учителя.
+   ВНИМАНИЕ (G): правильные ответы лежат в SLIDES прямо в HTML — ученик через DevTools их увидит.
+   Для урока это нормально; для контрольной проверку надо переносить в RPC на сервере.
+   SENSITIVE=true — не отправлять correct в интерфейс ученика (задел на будущее). */
+(()=>{
+const SENSITIVE=false;
+const $=id=>document.getElementById(id),Q=()=>window._qz,sb=()=>Q().sb,esc=s=>Q().esc(s);
+const ls=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
+const toast=m=>window._fx&&_fx.toast(m);
+const TEAMS=[['pink','Розовые','#ff4fa3'],['blue','Синие','#3d5afe'],['green','Зелёные','#00d68f'],['orange','Оранжевые','#ffc400']];
+const dot=c=>'<i class="tdot" style="background:'+c+'"></i>';
+const IMG='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="640" height="360" fill="#fffaf0"/><rect x="20" y="20" width="600" height="320" fill="#fff" stroke="#111" stroke-width="4" rx="16"/><circle cx="62" cy="62" r="22" fill="#ff4fa3" stroke="#111" stroke-width="3"/><text x="96" y="58" font-size="20" font-weight="800" font-family="sans-serif">Канал «ВСЯ ПРАВДА»</text><text x="96" y="82" font-size="14" fill="#666" font-family="sans-serif">пост · 14 тыс. репостов</text><text x="44" y="150" font-size="30" font-weight="900" font-family="sans-serif">ШОК! Врачи скрывают это!</text><text x="44" y="196" font-size="22" font-family="sans-serif">Перешли 10 друзьям, пока не удалили.</text><text x="44" y="236" font-size="22" font-family="sans-serif">Источник: «знакомый знакомого».</text><rect x="44" y="270" width="200" height="44" fill="#ffc400" stroke="#111" stroke-width="3" rx="10"/><text x="64" y="300" font-size="20" font-weight="800" font-family="sans-serif">ТОЛЬКО СЕГОДНЯ</text></svg>');
+/* ---- Слайды: 10 штук, можно править ---- */
+const F=(icon,text,label)=>({icon,text,label});
+const SLIDES=[
+ {type:'section',num:'01',title:'Что такое критическое мышление?'},
+ {type:'content',kicker:'Теория · 1 из 6',title:'Что такое критическое мышление?',body:'==Критическое мышление== — способность анализировать информацию, проверять её достоверность, отделять факты от мнений и принимать решения на основе доказательств, а не эмоций.\nЭто не про то, чтобы «критиковать всех и вся», а про то, чтобы {{задавать правильные вопросы}} к любой информации.'},
+ {type:'signs',title:'Четыре вопроса к любой информации',items:[{emoji:'❓',text:'Кто это сказал?',ex:'Например: «британские учёные» без имён и ссылки'},{emoji:'📍',text:'Откуда информация?',ex:'Например: канал в Telegram без первоисточника'},{emoji:'🎯',text:'Какая цель у источника?',ex:'Например: продать товар или собрать лайки'},{emoji:'🔬',text:'Есть ли доказательства?',ex:'Например: фото/видео, данные, ссылка на исследование'}]},
+ {type:'quote',text:'Критическое мышление — это !!не дар, а навык!!. И как любой навык, его можно натренировать.'},
+ {type:'section',num:'02',title:'Почему это важно сейчас?'},
+ {type:'stats',kicker:'Теория · 2 из 6',title:'Лавина информации',items:[{num:'60',suf:'%',label:'делятся новостями, не проверив источник'},{num:'6,5',suf:' сек',label:'среднее время удержания внимания',color:'pink'},{num:'7',suf:' из 10',label:'школьников не отличают фейк от факта',color:'orange'}]},
+ {type:'bars',title:'Что показывают опросы',items:[{label:'Попадались на фейки',value:72},{label:'Проверяют источник перед репостом',value:28}]},
+ {type:'features',title:'Откуда берутся фейки',items:[F('📱','Соцсети','Лента показывает то, что ==цепляет==, а не то, что правда.'),F('🎣','Кликбейт','Громкий заголовок ради клика: «ШОК! Ты не поверишь…»'),F('🏃','Скорость фейков','==Эмоциональная ложь== расходится быстрее скучной правды.')]},
+ {type:'quote',text:'Тот, кто управляет информацией, управляет решениями. ==Умей проверять== — и ты свободен.'},
+ {type:'section',num:'03',title:'Факт, мнение или фейк?'},
+ {type:'features',kicker:'Теория · 3 из 6',title:'Факт, мнение или фейк?',items:[F('📊','ФАКТ','==Можно проверить==, не зависит от чувств. «Эверест — 8849 м над уровнем моря».'),F('💭','МНЕНИЕ','{{Оценка и вкус}}, у каждого своё. «Эта игра лучше той».'),F('🕵️','ФЕЙК','!!Ложь под видом правды.!! «С 1 января WhatsApp станет платным».')]},
+ {type:'badges',title:'Быстрая проверка',items:[{text:'✅ Проверяется → факт',cls:'green'},{text:'💭 Это оценка → мнение',cls:'orange'},{text:'🚫 Проверка не проходит → фейк',cls:'pink'}]},
+ {type:'poll',question:'«Эверест — 8849 м над уровнем моря». Это факт или мнение?',options:['Факт','Мнение','Фейк'],correct:0,points:10,timer:20},
+ {type:'content',title:'Мнение — не плохо',body:'Мнение — не плохо! Проблема начинается, когда !!мнение выдают за факт!!: «Все знают, что эта группа — мусор».\n%%Правило: если нельзя проверить — это не факт.%%'},
+ {type:'section',num:'04',title:'Как работает манипуляция'},
+ {type:'features',kicker:'Теория · 4 из 6',title:'Приёмы манипуляции',items:[F('😱','Эмоциональная накачка','«ШОК! Это скрывают от тебя!»'),F('⚖️','Ложная дилемма','«Не подписался на канал — не настоящий фанат».'),F('👨‍🔬','Апелляция к авторитету','«Учёные доказали!» — без имён и ссылок.')]},
+ {type:'features',title:'Ещё три приёма',items:[F('👥','Социальное доказательство','«Весь класс уже играет. А ты?»'),F('⏳','Искусственный дефицит','«Осталось 2 места! Акция только сегодня!»'),F('🔄','Перевод стрелок','«Не веришь блогеру? Просто завидуешь».')]},
+ {type:'poll',question:'«Весь класс уже играет. А ты?» Какой это приём?',options:['Социальное доказательство','Ложная дилемма','Апелляция к авторитету','Перевод стрелок'],correct:0,points:10,timer:30},
+ {type:'quote',text:'Если текст заставляет тебя злиться, бояться или спешить — !!остановись и проверь!!.'},
+ {type:'section',num:'05',title:'Логические ошибки'},
+ {type:'features',kicker:'Теория · 5 из 6',title:'Ловушки рассуждения',items:[F('🔗','Совпадение — не причина','«Петух кричит утром — и встаёт солнце. Значит, петух вызывает рассвет?»'),F('🏃','Поспешное обобщение','«Двое геймеров плохо учатся → все геймеры двоечники».'),F('🔄','Обратное следование','«Все программисты умные. Я умный → я программист».')]},
+ {type:'features',title:'Ещё три ловушки',items:[F('🎯','Переход на личности','«Сам двоечник, твоё мнение о школе не считается».'),F('🪜','Придуманная цепочка','«Разрешат краситься → начнут ходить голыми».'),F('🆕','Апелляция к новизне','«Новое приложение лучше, потому что новое».')]},
+ {type:'poll',question:'«Петух кричит утром — и встаёт солнце. Значит, петух вызывает рассвет?» Какая ошибка?',options:['Совпадение — не причина','Придуманная цепочка','Апелляция к новизне','Переход на личности'],correct:0,points:10,timer:30},
+ {type:'section',num:'06',title:'Памятка'},
+ {type:'steps',kicker:'Теория · 6 из 6',title:'Прежде чем поверить',items:[{n:1,text:'СТОП. Не реагируй сразу. Эмоции — сигнал тревоги.'},{n:2,text:'ИСТОЧНИК. Кто автор и можно ли ему доверять?'},{n:3,text:'ДОКАЗАТЕЛЬСТВА. Где факты, цифры, ссылки?'},{n:4,text:'ПЕРЕПРОВЕРЬ. Пишут ли об этом другие надёжные источники?'},{n:5,text:'ВЫВОД. Факт, мнение или манипуляция? Только потом — репост.'}]},
+ {type:'games',title:'Пора играть!',subtitle:'Учитель выбирает игру — {{весь класс играет одновременно}}',allowed:['fake','opinion','sort','manip','slider','logic','fixarg']},
+ {type:'title',title:'Спасибо!',subtitle:'Итоги игры',icon:'🏆',podium:true}
+];
+const sv_=s=>SENSITIVE?{...s,correct:undefined}:s; // (F) версия слайда для телефона
+const il=t=>t.replace(/==(.+?)==/g,'<mark class="hl">$1</mark>').replace(/!!(.+?)!!/g,'<span class="pk">$1</span>').replace(/\{\{(.+?)\}\}/g,'<span class="bl">$1</span>').replace(/%%(.+?)%%/g,'<span class="gr">$1</span>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<i>$1</i>');
+const rt=t=>il(esc(t)); // текст слайда: экранирование + маркеры
+const md=s=>{let h='',ul=0;esc(s).split('\n').forEach(l=>{const m=l.match(/^- (.*)/);if(m){if(!ul){h+='<ul>';ul=1}h+='<li>'+il(m[1])+'</li>'}else{if(ul){h+='</ul>';ul=0}if(l.trim())h+='<p>'+il(l)+'</p>'}});return h+(ul?'</ul>':'')};
+const safe=u=>/^(https?:|data:image\/)/.test(u||'')?esc(u):'';
+const L='ABCD';
+function body(s,role,extra){ // extra — html (варианты, результаты), кладётся ВНУТРЬ белой карточки
+ const K=s.kicker?'<div class="kicker">'+esc(s.kicker)+'</div>':'',Ti=s.title?'<div class="title"><span>'+esc(s.title)+'</span></div>':'',I=s.items||[],
+ em=['✨','🎯','🧠','🔥','💡','🎭','🕵️'][Math.max(0,SLIDES.indexOf(s))%7],
+ w=(h,c)=>'<div class="slide-card '+(c||'')+'" data-emoji="'+em+'"><div class="slide-scope">'+K+h+(extra||'')+'</div></div>';
+ switch(s.type){
+ case'title':return w('<div class="pico float">'+esc(s.icon||'')+'</div><div class="title big"><span>'+esc(s.title)+'</span></div><div class="subtitle">'+rt(s.subtitle||'')+'</div>'+(s.podium?'<div class="pod" id="pPod"></div>':''));
+ case'content':return w(Ti+'<div class="pmd">'+md(s.body)+'</div>');
+ case'image':return w(Ti+'<img class="pimg" src="'+safe(s.url)+'" alt=""><div class="subtitle">'+rt(s.caption||'')+'</div>');
+ case'features':return w(Ti+'<div class="features-grid">'+I.map(i=>'<div class="feature-card"><span class="f-icon">'+esc(i.icon)+'</span><div class="f-text">'+esc(i.text)+'</div><div class="s-label">'+rt(i.label||'')+'</div></div>').join('')+'</div>');
+ case'signs':return w(Ti+'<div class="signs-grid">'+I.map(i=>'<div class="sign-item">'+(i.n!=null?'<span class="n">'+esc(i.n)+'</span>':'<span class="s-emoji">'+esc(i.emoji||'')+'</span>')+'<span class="s-text">'+rt(i.text)+(i.ex?'<span class="s-ex">'+esc(i.ex)+'</span>':'')+'</span></div>').join('')+'</div>');
+ case'stats':return w(Ti+'<div class="stats-row">'+I.map(i=>'<div class="stat-card '+esc(i.color||'')+'"><div class="s-num">'+esc(i.num)+esc(i.suf||'')+'</div><div class="s-label">'+esc(i.label)+'</div></div>').join('')+'</div>');
+ case'bars':return w(Ti+I.map(i=>{const v=Math.max(0,Math.min(100,+i.value||0));return'<div class="bar-row"><div class="bar-label"><span>'+esc(i.label)+'</span><strong>'+v+'%</strong></div><div class="bar-track"><div class="bar-fill" style="width:'+v+'%"></div></div></div>'}).join(''));
+ case'badges':return w(Ti+'<div class="badge-row">'+I.map(i=>'<span class="badge '+esc(i.cls||'')+'">'+esc(i.text)+'</span>').join('')+'</div>');
+ case'quote':return w('<div class="quote-mark">«</div><div class="quote">'+rt(s.text)+'</div>');
+ case'steps':return w(Ti+'<div class="signs-grid" style="grid-template-columns:1fr">'+I.map(i=>{const m=String(i.text).match(/^(.+?\.)\s(.*)$/);return'<div class="sign-item"><span class="n">'+esc(i.n)+'</span><span class="s-text">'+(m?'<strong>'+esc(m[1])+'</strong> '+rt(m[2]):rt(i.text))+'</span></div>'}).join('')+'</div>');
+ case'section':return w('<div class="sec-num">'+esc(s.num||'')+'</div><div class="sec-title">'+esc(s.title)+'</div>','sec');
+ case'games':return w('<div class="pico float">🎮</div><div class="title big"><span>'+esc(s.title)+'</span></div><div class="subtitle">'+rt(s.subtitle||'')+'</div>');
+ default:return w('<div class="title"><span>'+esc(s.question||s.title||'')+'</span></div>'+(s.text?'<div class="'+(s.type=='open'?'broken-arg':'game-text')+'">'+rt(s.text)+'</div>':''))}} // poll / open: поле text — отдельным блоком
+/* ---- Общие: таймер от server-времени старта фазы ---- */
+let T={left:0,t0:0,ps:null,paused:0,on:0};
+function sync(r,first){if(r.phase!='answering'){T={left:0,t0:0,ps:null,paused:0,on:0};return}
+ if(!r.phase_started_at){T={...T,left:r.timer_seconds||0,paused:1,on:r.timer_seconds>0};return}
+ if(r.phase_started_at!==T.ps){let l=r.timer_seconds||0;if(first&&l)l=Math.max(0,l-(Date.now()-Date.parse(r.phase_started_at))/1000);T={ps:r.phase_started_at,left:l,t0:Date.now(),paused:0,on:r.timer_seconds>0}}}
+const left=()=>!T.on?0:T.paused?T.left:Math.max(0,T.left-(Date.now()-T.t0)/1000);
+const tfmt=()=>T.on?Math.ceil(left())+' с':'∞';
+document.head.insertAdjacentHTML('beforeend',`<style>
+.pst{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;flex:1;width:100%;max-width:1100px;text-align:center;overflow:auto;padding:8px}
+.pico{font-size:clamp(3rem,10vw,7rem)}.pmd{font-size:clamp(1.1rem,2.3vw,2rem);line-height:1.6;text-align:left;max-width:900px;font-weight:500}.pmd ul{padding-left:1.2em}.pmd p{margin:.4em 0}
+.pimg{max-width:min(720px,92%);max-height:42vh;border:3px solid #111;border-radius:16px;box-shadow:6px 6px 0 #111;background:#fff}
+.popt{width:100%;max-width:760px;text-align:left;padding:14px 18px;background:#fff;border:3px solid #111;border-radius:14px;box-shadow:3px 3px 0 #111;font-weight:800;font-size:clamp(1rem,1.8vw,1.4rem)}
+#pBar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;width:100%;padding:10px;background:#fff;border:3px solid #111;border-radius:16px;box-shadow:4px 4px 0 #111;font-weight:800}
+#pBar .btn{padding:8px 12px;font-size:.82rem}.ptim{font:900 1.8rem var(--fd);min-width:90px}.tdot{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid #111;margin-right:6px;vertical-align:middle}
+.lb-row.ok{background:#b8f5d9}#pHost,#pStu{justify-content:flex-start;gap:10px;padding:14px 3vw}
+.pans{width:100%;max-width:760px;display:flex;gap:8px;align-items:center;text-align:left}.pans span{flex:1;word-break:break-word}
+#pStu .answer-btn{width:100%;max-width:520px;font-size:1.1rem;padding:18px}#pStu textarea{width:100%;max-width:520px}
+.pstat{font-weight:800;font-size:1.1rem;padding:10px 16px;border:3px solid #111;border-radius:14px;background:#fff}
+.slide-scope{width:100%;max-width:1100px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.pst .f-text{font-size:.95rem}.pst .s-label{font-size:.82rem}.pst .s-text{font-size:1rem}.pst .s-num{font-size:clamp(1.6rem,4vw,3rem)}
+.pst .features-grid,.pst .stats-row,.pst .signs-grid,.pst .bar-row{max-width:1000px}.pst .quote{font-size:clamp(1.2rem,2.6vw,2rem);text-align:left;max-width:900px}
+.popt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;max-width:900px}.popt input{width:20px;height:20px;margin-right:8px;vertical-align:middle}
+@media(max-width:760px){.popt-grid{grid-template-columns:1fr}}
+</style>`);
+document.body.insertAdjacentHTML('beforeend','<div class="ov" id="pHost" style="z-index:210"></div><div class="ov" id="pStu"></div><div class="modal" id="pMod"><div class="modal-box"><button class="btn secondary mclose">✕</button><div id="pModB"></div></div></div><div class="ov" id="pMode"><div class="title"><span>Что запускаем?</span></div><button class="btn primary big" data-m="solo">🎮 Индивидуальная тренировка</button><button class="btn big" data-m="presenting">📽 Урок с учителем</button><button class="btn secondary" data-m="x">← Назад</button></div>');
+$('pMod').onclick=e=>{if(e.target.id=='pMod'||e.target.classList.contains('mclose'))$('pMod').classList.remove('on')};
+const modal=h=>{$('pModB').innerHTML=h;$('pMod').classList.add('on')};
+const pods=a=>[1,0,2].map(i=>a[i]?'<div class="pd p'+(i+1)+'"><b>'+esc(a[i].name)+'</b><span>'+a[i].score+'</span><div class="blk">'+(i+1)+'</div></div>':'').join('');
+async function leaders(code,withTeams,n){const t=withTeams?'teams':'players',f=withTeams?'room':'room';const{data}=await sb().from(t).select('id:'+(withTeams?'id':'player_id')+',name,score').eq(f,code).order('score',{ascending:false}).limit(n||50);return data||[]}
+/* ===== УЧИТЕЛЬ ===== */
+let C=null,S=null,P=[],AN=[],H={busy:0};
+const host=c=>ls('qzHost')===c;
+async function setS(patch){if(!host(C))throw new Error('Нет прав ведущего');const{data,error}=await sb().from('room_state').upsert({room:C,...patch},{onConflict:'room'}).select().single();if(error)throw error;const o=S;S=data;sync(S,0);onS(o);return data}
+const sl=()=>SLIDES[S.slide_index];
+const go=i=>setS({slide_index:i,phase:'idle',timer_seconds:null,phase_started_at:null});
+const nav=d=>{const i=Math.max(0,Math.min(SLIDES.length-1,S.slide_index+d));if(i!=S.slide_index)go(i)};
+async function launch(){const s=sl();if(S.phase!='idle'||!['poll','open'].includes(s.type))return;
+ const sizes={},{data}=await sb().from('players').select('team_id').eq('room',C);(data||[]).forEach(p=>{if(p.team_id)sizes[p.team_id]=(sizes[p.team_id]||0)+1}); // размер команды фиксируем на старте
+ AN=[];await setS({phase:'answering',timer_seconds:s.timer||0,team_sizes:sizes})}
+const pause=()=>S.phase=='answering'&&setS(T.paused?{phase_started_at:new Date().toISOString()}:{timer_seconds:Math.ceil(left()),phase_started_at:null});
+const extend=()=>S.phase=='answering'&&setS({timer_seconds:Math.ceil(left())+15,phase_started_at:T.paused?null:new Date().toISOString()});
+/* Подсчёт очков: очки_команде = floor(points × верных / размер_команды) + бонус скорости 5/3/1 (по командам) */
+function calc(s,A,st){const pts=s.points||10,B=[5,3,1],sz=st.team_sizes||{},tm=st.teams_enabled;
+ A=A.map(a=>({...a,is_correct:a.value.i===s.correct,awarded_points:0}));
+ const ok=A.filter(a=>a.is_correct).sort((x,y)=>Date.parse(x.answered_at)-Date.parse(y.answered_at)),G={};
+ ok.forEach(a=>{const k=tm&&a.team_id?a.team_id:'p:'+a.player_id;(G[k]=G[k]||[]).push(a)});
+ Object.values(G).forEach((g,rank)=>{const solo=!(tm&&g[0].team_id),c=g.length,n=solo?1:Math.max(sz[g[0].team_id]||c,c),tot=(solo?pts:Math.floor(pts*c/n))+(B[rank]||0),b=Math.floor(tot/c);g.forEach((a,i)=>a.awarded_points=b+(i<tot%c?1:0))});
+ return A}
+const getAN=async()=>{const{data}=await sb().from('answers').select('*').eq('room',C).eq('slide_index',S.slide_index);AN=data||[]};
+async function recalc(){const s=sl();await getAN();if(s.type!='poll'||s.correct==null||!AN.length)return;const r=calc(s,AN,S);const e=await sb().from('answers').upsert(r,{onConflict:'id'});if(e.error)throw e.error;AN=r}
+async function finish(){if(!['answering','waiting'].includes(S.phase)||H.busy)return;H.busy=1;try{await setS({phase:'waiting'});await recalc();await setS({phase:'results'})}catch(e){toast('⚠️ '+(e.message||e))}H.busy=0}
+const skip=()=>{if(S.phase=='answering'&&!confirm('Пропустить без очков?'))return;nav(1)};
+async function award(id){const a=AN.find(x=>x.id==id),v=a.awarded_points?0:5;const{error}=await sb().from('answers').update({awarded_points:v}).eq('id',id);if(error)return toast('⚠️ '+error.message);a.awarded_points=v;stage()}
+const pct=()=>{const s=sl();if(s.type!='poll'||!AN.length)return'';return' · верно '+Math.round(AN.filter(a=>a.is_correct).length/AN.length*100)+'%'};
+/* ===== СИНХРОННЫЕ ИГРЫ: игра разворачивается в poll/open-слайды и вставляется после слайда games ===== */
+function expandGameToSlides(id){
+ // порядок вариантов ДОЛЖЕН совпадать у учителя и учеников → сортируем детерминированно (исходные данные тасуются при загрузке)
+ const nz=(o,c)=>{const t=o[c],a=[...o].sort();return{options:a,correct:a.indexOf(t)}};
+ const P=o=>({type:'poll',points:10,timer:25,__game:id,...o});
+ switch(id){
+ case'fake':return FAKE_DATA.map(i=>P({text:i.text,question:'Это фейк или факт?',options:['🕵️ Фейк','✅ Факт'],correct:i.isFake?0:1,why:i.why}));
+ case'opinion':return OPINION_DATA.map(i=>P({text:i.text,question:'Это факт или мнение?',options:['📊 Факт','💭 Мнение'],correct:i.type==='fact'?0:1,why:i.why}));
+ case'sort':return SORT_DATA.map(i=>P({text:i.text,question:'Куда отнести утверждение?',options:['📊 Факт','💭 Мнение','🕵️ Фейк'],correct:{fact:0,opinion:1,fake:2}[i.type],why:i.why}));
+ case'manip':return MANIP_DATA.map(i=>P({text:i.text,question:'Какой приём манипуляции?',...nz(i.options,i.correct),why:i.why}));
+ case'logic':return LOGIC_DATA.map(i=>P({text:i.text,question:'Какая логическая ошибка?',...nz(i.options,i.correct),why:i.why}));
+ case'race':return RACE_DATA.map(i=>P({question:i.q,...nz(i.a,i.correct),why:i.why,timer:20}));
+ case'slider':return FEED_DATA.map(m=>P({text:m.text.replace(/<[^>]+>/g,''),question:'Есть ли тут признаки манипуляции/фейка?',options:['Да','Нет'],correct:0,why:(m.text.match(/data-why="([^"]*)"/)||[])[1]||''}));
+ case'fixarg':return FIX_DATA.map(i=>({type:'open',text:i.broken,question:'Почини аргумент — перепиши корректно',timer:90,maxLen:200,etalon:i.etalon,__game:id}));
+ }return[]}
+/* Состояние «идёт игра» лежит в room_state.games_allowed = {game,at} (колонка уже есть) — так ученики вставляют ТЕ ЖЕ слайды, что и учитель */
+function applyGame(g){const want=g&&g.game?g.game+'@'+g.at:'';if(SLIDES._g===want)return;
+ for(let i=SLIDES.length-1;i>=0;i--)if(SLIDES[i].__game)SLIDES.splice(i,1);
+ SLIDES._g=want;if(want)SLIDES.splice(g.at+1,0,...expandGameToSlides(g.game))}
+async function startGame(id){const gs=expandGameToSlides(id);if(!gs.length||sl().type!='games')return;const at=S.slide_index;
+ await sb().from('answers').delete().eq('room',C).gte('slide_index',at+1).lt('slide_index',at+1+gs.length); // индексы переиспользуются → чистим старые ответы (очки уже в teams/players)
+ applyGame({game:id,at});
+ await setS({slide_index:at+1,phase:'idle',timer_seconds:null,phase_started_at:null,games_allowed:{game:id,at}})} // дальше учитель жмёт обычный «▶ Запустить»
+async function gameTop(from,n){const{data:a}=await sb().from('answers').select('player_id,team_id,awarded_points').eq('room',C).gte('slide_index',from).lt('slide_index',from+n);
+ const tm=S.teams_enabled,sum={};(a||[]).forEach(x=>{const k=tm&&x.team_id?'t:'+x.team_id:'p:'+x.player_id;sum[k]=(sum[k]||0)+x.awarded_points});
+ const[p,t]=await Promise.all([sb().from('players').select('player_id,name').eq('room',C),sb().from('teams').select('id,name').eq('room',C)]),nm={};
+ (p.data||[]).forEach(x=>nm['p:'+x.player_id]=x.name);(t.data||[]).forEach(x=>nm['t:'+x.id]=x.name);
+ return Object.entries(sum).map(([k,v])=>({id:k,name:nm[k]||'?',score:v})).sort((x,y)=>y.score-x.score).slice(0,3)}
+/* «🎮 К списку игр»: убрать слайды игры и сразу вернуться на слайд games (без итогов) */
+async function backToGames(){const g=S.games_allowed;if(!g||!g.game)return;applyGame(null);await setS({slide_index:g.at,phase:'idle',timer_seconds:null,phase_started_at:null,games_allowed:[]})}
+async function stopGame(){const g=S.games_allowed;if(!g||!g.game)return;const at=g.at,n=SLIDES.filter(x=>x.__game).length,top=await gameTop(at+1,n);
+ modal('<div class="title"><span>🏁 Игра завершена!</span></div>'+(Q().rows(top,null,null)||'<div class="subtitle">Ответов не было</div>')+'<div class="nav-buttons"><button class="btn" id="gAgain">🎮 Ещё игру</button><button class="btn primary" id="gNext">▶ К слайдам урока</button></div>');
+ const back=async to=>{$('pMod').classList.remove('on');applyGame(null);await setS({slide_index:to,phase:'idle',timer_seconds:null,phase_started_at:null,games_allowed:[]})};
+ $('gAgain').onclick=()=>back(at);$('gNext').onclick=()=>back(at+1)}
+function stage(){const s=sl(),el=$('pSt'),ph=S.phase;let x='';
+ if(s.type=='games')x='<div class="popt-grid">'+[...SOLO_GAMES,{id:'race',icon:'⚡',title:'Блиц-викторина',desc:'15 быстрых вопросов'}].map(g=>'<button class="popt" data-game="'+g.id+'">'+g.icon+' '+esc(g.title)+'<small>'+esc(g.desc)+'</small></button>').join('')+'</div>';
+ if(s.type=='poll'){const cn=s.options.map((_,i)=>AN.filter(a=>a.value.i===i).length),mx=Math.max(1,...cn);
+  x=ph=='results'?s.options.map((o,i)=>'<div class="lb-row'+(i===s.correct?' ok':'')+'" style="width:100%;max-width:760px"><div class="bar" style="width:'+cn[i]/mx*100+'%"></div><b>'+L[i]+'</b><span>'+esc(o)+'</span><i>'+cn[i]+'</i></div>').join('')+'<div class="pstat">Ответили: '+AN.length+pct()+'</div>'+(s.why?'<div class="pstat">💡 '+rt(s.why)+'</div>':''):s.options.map((o,i)=>'<div class="popt">'+L[i]+'. '+esc(o)+'</div>').join('')}
+ if(s.type=='open'&&ph=='results')x=(AN.map(a=>'<div class="pans"><span>'+esc(a.value.text||'')+'</span><button class="btn" data-aw="'+a.id+'">'+(a.awarded_points?'✅ +'+a.awarded_points:'👍 +5')+'</button></div>').join('')||'<div class="subtitle">Ответов нет</div>')+(s.etalon?'<div class="etalon-box show"><strong>Эталон:</strong> '+esc(s.etalon)+'</div>':'');
+ const k=S.slide_index+':'+S.phase;el.classList.toggle('no-anim',H.sk===k);H.sk=k; // у учителя тоже: без повторной анимации при перерисовке
+ el.innerHTML=body(s,0,x);el.querySelectorAll('[data-aw]').forEach(b=>b.onclick=()=>award(b.dataset.aw));
+ el.querySelectorAll('[data-game]').forEach(b=>b.onclick=()=>startGame(b.dataset.game).catch(e=>toast('⚠️ '+(e.message||e))));
+ if(s.podium)podium(C,'pPod')}
+async function podium(code,id){const t=S.teams_enabled,a=await leaders(code,t,3),e=$(id);if(e)e.innerHTML=pods(a);if(a.length)_fx.burst(120,innerWidth/2,innerHeight/3)}
+function bar(){const s=sl(),ph=S.phase,i=S.slide_index,live=['poll','open'].includes(s.type),nx=SLIDES[i+1];
+ $('pBar').innerHTML='<span>Слайд '+(i+1)+' из '+SLIDES.length+'</span><button class="btn" id="b1" '+(i?'':'disabled')+'>◀</button><button class="btn" id="b2" '+(nx?'':'disabled')+'>▶</button>'+
+ (live?'<button class="btn primary" id="b3"'+(ph!='idle'?' disabled':'')+'>▶ Запустить</button><button class="btn" id="b4"'+(ph=='answering'?'':' disabled')+'>⏸/▶ Пауза</button><button class="btn" id="b5"'+(ph=='answering'?'':' disabled')+'>+15с</button><button class="btn" id="b6"'+(ph=='answering'?'':' disabled')+'>📊 Показать результаты</button><button class="btn secondary" id="b7">⏭ Пропустить без очков</button><span class="ptim" id="pTim"></span><span id="pCnt"></span>':'')+
+ (s.__game?'<button class="btn" id="g4">🎮 К списку игр</button><button class="btn" id="g3">⏹ Завершить игру</button>':'')+'<button class="btn" id="b8">👥 Команды</button><button class="btn" id="b9">📊 Лидерборд</button><button class="btn" id="b10">⬇ CSV</button><button class="btn" id="b11">⛶</button><button class="btn secondary" id="b12">Выйти</button><span style="flex-basis:100%;font-size:.8rem;color:#555">Дальше: '+(nx?esc(nx.title||nx.question||'слайд'):'—')+' · Space — запуск/результаты, ←→ — слайды</span>';
+ const f={b1:()=>nav(-1),b2:()=>nav(1),b3:launch,b4:pause,b5:extend,b6:finish,b7:skip,b8:teamsPanel,g3:stopGame,g4:backToGames,b9:board,b10:csv,b11:()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{}),b12:()=>{localStorage.removeItem('qzHost');location.href=location.pathname}};
+ Object.keys(f).forEach(k=>{const b=$(k);if(b)b.onclick=()=>Promise.resolve(f[k]()).catch(e=>toast('⚠️ '+(e.message||e)))})}
+async function onS(o){if(!o||o.slide_index!=S.slide_index||o.phase!=S.phase){if(!o||o.slide_index!=S.slide_index)AN=[];if(S.phase=='results'&&!AN.length)await getAN();stage();bar()}}
+const board=async()=>{const a=await leaders(C,S.teams_enabled);modal('<div class="title" style="font-size:1.3rem">🏆 <span>'+(S.teams_enabled?'Команды':'Игроки')+'</span></div>'+Q().rows(a,null,null))};
+async function csv(){const[a,p,t]=await Promise.all([sb().from('answers').select('*').eq('room',C).order('slide_index'),sb().from('players').select('player_id,name').eq('room',C),sb().from('teams').select('id,name').eq('room',C)]);
+ const nm={},tn={};(p.data||[]).forEach(x=>nm[x.player_id]=x.name);(t.data||[]).forEach(x=>tn[x.id]=x.name);
+ const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"',R=[['Слайд','Вопрос','Игрок','Команда','Ответ','Верно','Очки']];
+ (a.data||[]).forEach(x=>{const s=SLIDES[x.slide_index];R.push([x.slide_index+1,s.question,nm[x.player_id],tn[x.team_id],s.type=='poll'?s.options[x.value.i]:x.value.text,x.is_correct==null?'':x.is_correct?'да':'нет',x.awarded_points])});
+ const b=new Blob(['\ufeff'+R.map(r=>r.map(q).join(';')).join('\n')],{type:'text/csv'}),l=document.createElement('a');l.href=URL.createObjectURL(b);l.download='otvety-'+C+'.csv';l.click()}
+/* Команды: пошагово. 1) настройка → 2) результат (кто в какой команде) → 3) правка вручную */
+const pl_=n=>n+(n%10==1&&n%100!=11?' игрок':[2,3,4].includes(n%10)&&![12,13,14].includes(n%100)?' игрока':' игроков');
+const tdata=async()=>{const[t,p]=await Promise.all([sb().from('teams').select('*').eq('room',C),sb().from('players').select('player_id,name,team_id').eq('room',C).order('joined_at')]);
+ return{tm:(t.data||[]).sort((a,b)=>TEAMS.findIndex(x=>x[2]==a.color)-TEAMS.findIndex(x=>x[2]==b.color)),pl:p.data||[]}};
+const ping=()=>setS({team_count:S.team_count}); // «пустое» обновление room_state — будит телефоны учеников
+const deal=async(tm,pl)=>{await Promise.all([...pl].sort(()=>Math.random()-.5).map((p,i)=>sb().from('players').update({team_id:tm[i%tm.length].id}).eq('room',C).eq('player_id',p.player_id)));await ping()};
+const tclose=()=>$('pMod').classList.remove('on');
+async function teamsPanel(){const{tm}=await tdata();tm.length&&S.teams_enabled?tpResult():tpSetup()}
+function tpSetup(){H.tn=H.tn||2;H.tmode=H.tmode||'auto';
+ modal('<div class="title" style="font-size:1.3rem">👥 <span>Команды</span></div><div class="subtitle">Разделить класс на команды?</div><b>Сколько команд?</b><div class="nav-buttons">'+[2,3,4].map(n=>'<button class="btn'+(n==H.tn?' primary':'')+'" data-n="'+n+'" style="min-width:64px;font-size:1.3rem">'+n+'</button>').join('')+'</div><b>Как распределить?</b><div class="tplist">'+[['auto','Случайно'],['manual','Вручную (я сам раскидаю)'],['self','Ученики выбирают при входе']].map(([v,l])=>'<label class="popt"><input type="radio" name="tm" value="'+v+'"'+(v==H.tmode?' checked':'')+'> '+l+'</label>').join('')+'</div><div class="nav-buttons"><button class="btn primary" id="tGo">Создать команды</button><button class="btn secondary" id="tCancel">Отмена</button></div>');
+ $('pModB').querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{H.tn=+b.dataset.n;tpSetup()});
+ $('pModB').querySelectorAll('[name=tm]').forEach(r=>r.onchange=()=>H.tmode=r.value);$('tCancel').onclick=tclose;
+ $('tGo').onclick=async()=>{try{const n=H.tn,m=H.tmode;await sb().from('teams').delete().eq('room',C);
+  const{data:t,error}=await sb().from('teams').insert(TEAMS.slice(0,n).map(x=>({room:C,name:x[1],color:x[2]}))).select();if(error)throw error;
+  await setS({teams_enabled:true,team_count:n,team_pick:m});if(m=='auto'){const{pl}=await tdata();await deal(t,pl)}
+  m=='manual'?tpManual():tpResult()}catch(e){toast('⚠️ '+(e.message||e))}}}
+async function tpResult(){const{tm,pl}=await tdata(),by=id=>pl.filter(p=>p.team_id==id),no=pl.filter(p=>!p.team_id),nm=a=>a.map(p=>esc(p.name)).join(', ')||'—';
+ modal('<div class="title" style="font-size:1.3rem">✅ <span>Команды созданы</span></div>'+tm.map(t=>'<div class="tmrow">'+dot(t.color)+esc(t.name)+' ('+pl_(by(t.id).length)+')<div class="tmn">'+nm(by(t.id))+'</div></div>').join('')+(no.length?'<div class="tmrow">Без команды ('+no.length+')<div class="tmn">'+nm(no)+'</div></div>':'')+(S.team_pick=='self'?'<div class="subtitle">Ученики выбирают команду на телефонах — нажимай «🔄 Обновить».</div>':'')+
+ '<div class="nav-buttons"><button class="btn" id="tShuf">🔀 Перетасовать</button><button class="btn" id="tMan">✏️ Изменить вручную</button><button class="btn" id="tRef">🔄 Обновить</button></div><div class="nav-buttons"><button class="btn primary" id="tDone">✔ Готово</button><button class="btn secondary" id="tDel">🗑 Удалить команды</button></div>');
+ $('tShuf').onclick=async()=>{await deal(tm,pl);tpResult()};$('tMan').onclick=tpManual;$('tRef').onclick=tpResult;$('tDone').onclick=tclose;
+ $('tDel').onclick=async()=>{if(!confirm('Удалить команды? Игроки останутся без команд.'))return;await sb().from('teams').delete().eq('room',C);await setS({teams_enabled:false,team_count:0});tclose()}}
+async function tpManual(){const{tm,pl}=await tdata();
+ modal('<div class="title" style="font-size:1.3rem">✏️ <span>Кто в какой команде</span></div>'+pl.map(p=>'<div class="pans"><span>'+esc(p.name)+'</span><select class="text-input" data-p="'+p.player_id+'" style="width:auto"><option value="">—</option>'+tm.map(t=>'<option value="'+t.id+'"'+(t.id==p.team_id?' selected':'')+'>'+esc(t.name)+'</option>').join('')+'</select></div>').join('')+'<div class="nav-buttons"><button class="btn primary" id="tOk">✔ Готово</button></div>');
+ $('pModB').onchange=async e=>{const x=e.target;if(x.dataset.p){await sb().from('players').update({team_id:x.value||null}).eq('room',C).eq('player_id',x.dataset.p);ping()}};$('tOk').onclick=tpResult}
+function hostInit(code){C=code;
+ (H.iv||[]).forEach(clearInterval);H.iv=[]; // при повторном вызове старые таймеры и обработчик клавиш снимаются
+ const setInterval=(f,t)=>{const id=window.setInterval(f,t);H.iv.push(id);return id};
+ const addEventListener=(t,f)=>{if(H.kd)window.removeEventListener('keydown',H.kd);H.kd=f;window.addEventListener(t,f)};const h=$('pHost');h.classList.add('on');$('host').classList.remove('on');
+ h.innerHTML='<div class="pst" id="pSt"></div><div id="pBar"></div>';
+ sb().from('room_state').select('*').eq('room',code).maybeSingle().then(async({data})=>{S=data||await setS({});sync(S,1);applyGame(S.games_allowed); // после перезагрузки учителя восстановить вставленные слайды игры
+  if(S.phase=='results'){try{await recalc()}catch(e){}} // восстановление: посчитать, если не успели
+  stage();bar()});
+ setInterval(async()=>{if(!S||S.phase!='answering')return;const{count}=await sb().from('answers').select('player_id',{count:'exact',head:true}).eq('room',C).eq('slide_index',S.slide_index);
+  const e=$('pCnt');if(e)e.textContent='Ответили: '+(count||0)+' из '+P.length}, 2500); // polling вместо realtime на answers
+ setInterval(()=>{const e=$('pTim');if(e&&S&&S.phase=='answering'){e.textContent=T.paused?'⏸ '+tfmt():tfmt();if(T.on&&!T.paused&&left()<=0)finish()}else if(e)e.textContent=''},250);
+ addEventListener('keydown',e=>{if(!S||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;const k=e.key;
+  if(k=='ArrowRight')nav(1);else if(k=='ArrowLeft')nav(-1);else if(k==' '){e.preventDefault();S.phase=='idle'?launch():S.phase=='answering'?finish():nav(1)}
+  else{const m={1:launch,2:finish,3:pause,4:extend,5:teamsPanel,6:board,7:()=>$('b11')&&$('b11').click(),8:skip,9:csv}[k];if(m)m()}})}
+/* ===== УЧЕНИК ===== */
+let V=null;
+async function student(ses){if(V&&V.code==ses.code)return;V={code:ses.code,id:ses.id,S:null,me:null,mine:null,top:[],team:null,slide:-1};
+ const o=$('pStu');o.classList.add('on');o.innerHTML='<div id="sHdr" class="pstat"></div><div class="pst" id="sMain"></div><div class="pstat" id="sFoot"></div>';
+ let t;const run=()=>{clearTimeout(t);t=setTimeout(refresh,100)};
+ sb().channel('p-'+ses.code).on('postgres_changes',{event:'*',schema:'public',table:'room_state',filter:'room=eq.'+ses.code},run).subscribe();V.run=run; // подписка на teams — динамически, см. refresh()
+ setInterval(refresh,15000);setInterval(()=>{const e=$('sTim');if(e&&V.S&&V.S.phase=='answering'){e.textContent=tfmt();e.classList.toggle('paused',!!T.paused)}},250);refresh()}
+async function refresh(){const c=V.code,{data:r}=await sb().from('room_state').select('*').eq('room',c).maybeSingle();if(!r)return;
+ const first=!V.S,o=V.S;V.S=r;sync(r,first);
+ if(r.teams_enabled&&!V.tch)V.tch=sb().channel('pt-'+c).on('postgres_changes',{event:'*',schema:'public',table:'teams',filter:'room=eq.'+c},V.run).subscribe(); // команды включили → подписываемся
+ else if(!r.teams_enabled&&V.tch){sb().removeChannel(V.tch);V.tch=null}
+ applyGame(r.games_allowed); // вставить/убрать слайды игры, как у учителя
+ if(r.slide_index!=V.slide){V.slide=r.slide_index;V.mine=null}
+ const{data:me}=await sb().from('players').select('team_id').eq('room',c).eq('player_id',V.id).maybeSingle();V.me=me||{};
+ V.team=null;if(r.teams_enabled){const{data:t}=await sb().from('teams').select('*').eq('room',c);V.teams=t||[];V.team=V.teams.find(x=>x.id==V.me.team_id)}
+ if(r.phase!='idle'&&!V.mine){const{data:a}=await sb().from('answers').select('*').eq('room',c).eq('player_id',V.id).eq('slide_index',r.slide_index).maybeSingle();V.mine=a}
+ const s=SLIDES[r.slide_index];if(r.phase=='results'&&V.mine)V.mine=(await sb().from('answers').select('*').eq('id',V.mine.id).single()).data||V.mine;
+ if(r.phase=='results'||s.podium)V.top=await leaders(c,r.teams_enabled,3);
+ // перерисовываем ТОЛЬКО если поменялось то, что видно на экране
+ const hh=JSON.stringify([r.phase,r.slide_index,r.teams_enabled,r.team_pick,r.timer_seconds,r.phase_started_at,r.games_allowed,V.mine&&[V.mine.id,V.mine.is_correct,V.mine.awarded_points],V.me.team_id,V.team&&V.team.score,(V.teams||[]).length,(V.top||[]).map(t=>t.id+':'+t.score)]);
+ if(hh===V.h)return;V.h=hh;draw()}
+function draw(){const r=V.S,s=sv_(SLIDES[r.slide_index]),ph=r.phase,m=V.mine;let h='';
+ const lt=c=>['#3d5afe','#ff4fa3'].includes(c);
+ $('sHdr').className=V.team?'tplq':'pstat';
+ $('sHdr').style.cssText=V.team?'background:'+V.team.color+';color:'+(lt(V.team.color)?'#fff':'#111'):'';
+ $('sHdr').innerHTML=V.team?'Ты в команде<b>«'+esc(V.team.name)+'»</b>'+V.team.score+' очков':r.teams_enabled&&r.team_pick!='self'?'⏳ Учитель распределяет по командам…':'📽 Урок идёт';
+ if(r.teams_enabled&&r.team_pick=='self'&&!V.me.team_id){V._lastHtml='';$('sMain').innerHTML='<div class="title"><span>Выбери свою команду</span></div>'+(V.teams||[]).map(t=>'<button class="answer-btn" data-t="'+t.id+'" style="background:'+t.color+';color:'+(lt(t.color)?'#fff':'#111')+'">'+esc(t.name)+'</button>').join('');
+  $('sMain').querySelectorAll('[data-t]').forEach(b=>b.onclick=async()=>{await sb().from('players').update({team_id:b.dataset.t}).eq('room',V.code).eq('player_id',V.id);refresh()});$('sFoot').textContent='';return}
+ let f='';
+ if(s.podium)h+='<div class="pod">'+pods(V.top)+'</div>';
+ if(s.type=='games')f='🎮 Скоро играем — смотри на экран';
+ if(['poll','open'].includes(s.type)){
+  if(ph=='idle')f='⏳ Скоро начнём…';
+  else if(m&&ph=='answering')f='✅ Ответ принят, ждём других <span id="sTim"></span>';
+  else if(ph=='answering'){h+=s.type=='poll'?s.options.map((o,i)=>'<button class="answer-btn" data-i="'+i+'">'+L[i]+'. '+esc(o)+'</button>').join(''):'<textarea class="fixarea" id="sTxt" maxlength="'+(s.maxLen||200)+'" placeholder="Твой ответ…"></textarea><button class="btn primary" id="sSend">Отправить</button>';f='⏱ <span id="sTim"></span>'}
+  else if(ph=='waiting')f='⏳ Считаем результаты…';
+  else if(ph=='results'){
+   if(s.type=='poll'&&s.correct!=null)h+=s.options.map((o,i)=>'<button class="answer-btn'+(i===s.correct?' correct':m&&m.value.i===i?' wrong':'')+'" disabled>'+L[i]+'. '+esc(o)+'</button>').join(''); // подсветка правильного и ошибки (с пульсом)
+   if(m&&m.is_correct&&V.bk!==r.slide_index){V.bk=r.slide_index;_fx.burst(30,innerWidth/2,innerHeight/3)} // конфетти: только у ученика, один раз на слайд
+   if(!m)f='Ты не ответил на этот слайд';
+   else if(s.type=='poll'){const ok=m.is_correct,c=SENSITIVE?'':' Правильный ответ: '+L[SLIDES[r.slide_index].correct];f=ok?'✅ Верно! +'+m.awarded_points+' очков'+(r.teams_enabled?' (твоя доля команде)':''):'❌ Неверно.'+c}
+   else f='✅ Ответ отправлен'+(m.awarded_points?' · учитель начислил +'+m.awarded_points:'');
+   if(s.why&&s.type=='poll')h+='<div class="pstat">💡 '+rt(s.why)+'</div>';if(s.etalon&&s.type=='open')h+='<div class="etalon-box show"><strong>Эталон:</strong> '+esc(s.etalon)+'</div>';
+   if(V.top.length)h+='<div style="width:100%;max-width:520px">'+Q().rows(V.top,null,null)+'</div>'}}
+ const old=document.querySelector('#sMain .slide-scope'),sc=old?old.scrollTop:0,same=V.dKey===r.slide_index+':'+ph;V.dKey=r.slide_index+':'+ph; // тот же слайд И та же фаза → без анимации
+ const html=body(s,0,h);$('sFoot').innerHTML=f;
+ if(html!==V._lastHtml){V._lastHtml=html;$('sMain').classList.toggle('no-anim',same);$('sMain').innerHTML=html; // DOM пересоздаём, только если разметка реально другая
+  const nw=document.querySelector('#sMain .slide-scope');if(nw){if(same)nw.classList.add('no-anim');nw.scrollTop=sc}}
+ $('sMain').querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>send({i:+b.dataset.i}));
+ const sd=$('sSend');if(sd)sd.onclick=()=>{const t=$('sTxt').value.trim();if(t)send({text:t.slice(0,s.maxLen||200)})}}
+async function send(value){const r=V.S;const{data:cur}=await sb().from('room_state').select('slide_index,phase').eq('room',V.code).single(); // (A) защита от гонки слайдов
+ if(!cur||cur.slide_index!=r.slide_index||cur.phase!='answering'){toast('Слайд уже сменился, не успел');return refresh()}
+ const{data,error}=await sb().from('answers').insert({room:V.code,player_id:V.id,team_id:V.me.team_id||null,slide_index:r.slide_index,value}).select().single();
+ if(error&&error.code!='23505'){toast('⚠️ '+error.message);return}
+ if(data){V.mine=data;navigator.vibrate&&navigator.vibrate(30)}refresh()}
+/* ===== Публичный интерфейс для основного кода ===== */
+window.Pres={
+ pick(cb){const o=$('pMode');o.classList.add('on');o.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{o.classList.remove('on');const m=b.dataset.m;if(m=='x')return;
+  if(m=='solo'){goToPage(2);return} // тренировка: без комнаты, без QR, без Supabase — hostCode не пишем
+  if(!sb()){alert('Урок с учителем работает только с Supabase (задай ключи в QUIZ_CONFIG).');return}cb('presenting')})},
+ async init(code){const{error}=await sb().from('room_state').upsert({room:code,mode:'presenting',slide_index:0,phase:'idle'},{onConflict:'room'});if(error)throw error},
+ host(d,code){P=d.players;if(C!=code){document.querySelectorAll('#pHost').forEach(x=>x.innerHTML='');hostInit(code)}},
+ student,body,SLIDES,expandGameToSlides,applyGame,active:()=>!!(V&&V.S&&V.S.mode=='presenting')};
+})();
+
+</script>
+</body>
+</html>
